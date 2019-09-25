@@ -1,25 +1,22 @@
 package me.canelex.spidey.commands;
 
+import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.objects.search.GoogleSearch;
 import me.canelex.spidey.utils.Utils;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.apache.commons.lang3.StringUtils;
 
 @SuppressWarnings("unused")
-public class GoogleSearchCommand implements ICommand {
-
+public class GoogleSearchCommand implements ICommand
+{
 	@Override
-	public final void action(final GuildMessageReceivedEvent e) {
-
+	public final void action(final GuildMessageReceivedEvent e)
+	{
 		final var args = e.getMessage().getContentRaw().split("\\s+");
-
 		final var result = GoogleSearch.performSearch(
 				StringUtils.join(args, "+", 1, args.length));
-
 		Utils.sendMessage(e.getChannel(), result.getContent(), false);
-
 	}
 
 	@Override
@@ -32,5 +29,4 @@ public class GoogleSearchCommand implements ICommand {
 	public final Category getCategory() { return Category.MISC; }
 	@Override
 	public final String getUsage() { return "s!g <query>"; }
-
 }

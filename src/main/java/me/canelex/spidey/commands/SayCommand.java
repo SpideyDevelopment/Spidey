@@ -1,47 +1,32 @@
 package me.canelex.spidey.commands;
 
+import me.canelex.jda.api.Permission;
+import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.PermissionError;
 import me.canelex.spidey.utils.Utils;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 @SuppressWarnings("unused")
-public class SayCommand implements ICommand {
-
+public class SayCommand implements ICommand
+{
 	@Override
-	public final void action(final GuildMessageReceivedEvent e) {
-
-		final var neededPerm = "BAN_MEMBERS";
-
-		if (e.getMember() != null && !Utils.hasPerm(e.getMember(), Permission.valueOf(neededPerm))) {
-
-			Utils.sendMessage(e.getChannel(), PermissionError.getErrorMessage(neededPerm), false);
-
+	public final void action(final GuildMessageReceivedEvent e)
+	{
+		final var member = e.getMember();
+		final var message = e.getMessage();
+		final var channel = e.getChannel();
+		final var channels = message.getMentionedChannels();
+		final var target = channels.isEmpty() ? channel : channels.get(0);
+		if (member != null && !Utils.hasPerm(member, Permission.BAN_MEMBERS))
+			Utils.sendMessage(channel, PermissionError.getErrorMessage("BAN_MEMBERS"), false);
+		else
+		{
+			Utils.deleteMessage(message);
+			var toSay = message.getContentRaw().substring(6);
+			toSay = toSay.substring(0, toSay.lastIndexOf(' '));
+			Utils.sendMessage(target, toSay, false);
 		}
-
-		else {
-
-			Utils.deleteMessage(e.getMessage());
-			var toSay = e.getMessage().getContentRaw().substring(6);
-
-			if (e.getMessage().getMentionedChannels().isEmpty()) {
-
-				Utils.sendMessage(e.getChannel(), toSay, false);
-
-			}
-
-			else {
-
-				final var ch = e.getMessage().getMentionedChannels().get(0);
-				toSay = toSay.substring(0, toSay.lastIndexOf(' '));
-				Utils.sendMessage(ch, toSay, false);
-
-			}
-
-		}
-
 	}
 
 	@Override
@@ -54,5 +39,4 @@ public class SayCommand implements ICommand {
 	public final Category getCategory() { return Category.UTILITY; }
 	@Override
 	public final String getUsage() { return "s!say <toSay>"; }
-
 }

@@ -1,12 +1,12 @@
 package me.canelex.spidey.objects.command;
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import java.util.Collections;
 import java.util.List;
 
-public interface ICommand {
-
+public interface ICommand
+{
 	void action(final GuildMessageReceivedEvent e);
 	String getDescription();
 	boolean isAdmin();
@@ -14,5 +14,4 @@ public interface ICommand {
 	String getUsage();
     default List<String> getAliases() { return Collections.emptyList(); }
     Category getCategory();
-
 }

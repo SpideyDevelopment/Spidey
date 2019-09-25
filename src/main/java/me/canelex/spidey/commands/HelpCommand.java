@@ -1,63 +1,64 @@
 package me.canelex.spidey.commands;
 
+import me.canelex.jda.api.Permission;
+import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import me.canelex.spidey.Core;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.Utils;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 
 @SuppressWarnings("unused")
-public class HelpCommand extends Core implements ICommand {
-
+public class HelpCommand extends Core implements ICommand
+{
     @Override
-    public final void action(final GuildMessageReceivedEvent e) {
-
+    public final void action(final GuildMessageReceivedEvent e)
+    {
         final HashMap<String, ICommand> commands = new HashMap<>();
 
         final var args = e.getMessage().getContentRaw().split("\\s+");
+        final var channel = e.getChannel();
         final var emb = Utils.createEmbedBuilder(e.getAuthor())
                 .setColor(Color.WHITE)
-                .setAuthor("Spidey's Commands", "https://github.com/caneleex/Spidey", e.getJDA().getSelfUser().getEffectiveAvatarUrl());
+                .setAuthor("Spidey's Commands", "https://github.com/caneleex/Spidey", e.getJDA().getSelfUser().getAvatarUrl());
 
-        if (args.length < 2) {
-            for (final var entry : Core.commands.entrySet()) {
-                commands.put(entry.getKey(), entry.getValue());
-            }
+        if (args.length < 2)
+        {
+            Core.commands.forEach(commands::put);
             commands.remove("help");
 
-            if (!Utils.hasPerm(Objects.requireNonNull(e.getMember()), Permission.BAN_MEMBERS)) {
+            if (!Utils.hasPerm(e.getMember(), Permission.BAN_MEMBERS))
                 commands.keySet().removeIf(com -> Core.commands.get(com).isAdmin());
-            }
 
             final HashMap<Category, List<ICommand>> categories = new HashMap<>();
-            for (final var cmd : commands.values()) {
+            commands.values().forEach(cmd -> {
                 final var list = categories.computeIfAbsent(cmd.getCategory(), ignored -> new ArrayList<>());
                 list.add(cmd);
-            }
+            });
+
             final var sb = new StringBuilder();
-            categories.forEach((category, commandz) -> {
+            categories.forEach((category, commandz) ->
+            {
                 sb.append("\n");
                 sb.append(category.friendlyName());
                 sb.append(" ").append("-").append(" ");
                 sb.append(listToString(commandz, ICommand::getInvoke));
                 emb.setDescription("Prefix: **s!**\n" + sb.toString());
             });
-            Utils.sendMessage(e.getChannel(), emb.build());
+            Utils.sendMessage(channel, emb.build());
         }
-        else {
+        else
+        {
             final var cmd = e.getMessage().getContentRaw().substring(7);
-            if (!Core.commands.containsKey(cmd)) {
-                Utils.sendMessage(e.getChannel(), ":no_entry: **" + cmd + "** isn't a valid command.", false);
-            }
-            else {
+            if (!Core.commands.containsKey(cmd))
+                Utils.sendMessage(channel, ":no_entry: **" + cmd + "** isn't a valid command.", false);
+            else
+            {
                 final var command = Core.commands.get(cmd);
                 final var eb = Utils.createEmbedBuilder(e.getAuthor());
                 eb.setAuthor("Viewing command info - " + cmd);
@@ -65,20 +66,20 @@ public class HelpCommand extends Core implements ICommand {
                 eb.addField("Description", command.getDescription() == null ? "Unspecified" : command.getDescription(), false);
                 eb.addField("Usage", command.getUsage() == null ? "Unspecified" : "`" + command.getUsage() + "`", false);
                 eb.addField("Category",  command.getCategory().friendlyName(), false);
-                Utils.sendMessage(e.getChannel(), eb.build());
+                Utils.sendMessage(channel, eb.build());
             }
         }
-
     }
 
-    private String listToString(final List<ICommand> list, final Function<ICommand, String> transformer) {
+    private String listToString(final List<ICommand> list, final Function<ICommand, String> transformer)
+    {
         final var builder = new StringBuilder();
-        for (var i = 0; i < list.size(); i++) {
+        for (var i = 0; i < list.size(); i++)
+        {
             final var cmd = list.get(i);
             builder.append("`").append(transformer.apply(cmd)).append("`");
-            if (i != list.size() - 1) {
+            if (i != list.size() - 1)
                 builder.append(", ");
-            }
         }
         return builder.toString();
     }
@@ -93,5 +94,4 @@ public class HelpCommand extends Core implements ICommand {
     public final Category getCategory() { return Category.INFORMATIVE; }
     @Override
     public final boolean isAdmin() { return false; }
-
 }

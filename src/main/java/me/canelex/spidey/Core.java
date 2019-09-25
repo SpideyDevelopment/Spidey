@@ -1,11 +1,11 @@
 package me.canelex.spidey;
 
+import me.canelex.jda.api.JDABuilder;
+import me.canelex.jda.api.OnlineStatus;
+import me.canelex.jda.api.entities.Activity;
 import me.canelex.spidey.objects.command.CommandParser;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.Utils;
-import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.entities.Activity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,32 +14,36 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class Core {
-
+public class Core
+{
 	static final CommandParser parser = new CommandParser();
 	protected static final Map<String, ICommand> commands = new HashMap<>();
 	private static final Logger logger = LoggerFactory.getLogger(Core.class);
 	private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
-	public static void main(final String[] args) {
-		try {
+	public static void main(final String[] args)
+	{
+		try
+		{
 			final var jda = new JDABuilder(Secrets.TOKEN)
                     .addEventListeners(new Events())
                     .setStatus(OnlineStatus.DO_NOT_DISTURB)
                     .setActivity(Activity.listening("your commands"));
-			for (var i = 0; i < 10; i++) {
+			for (var i = 0; i < 10; i++)
+			{
 			    jda.useSharding(i, 10).build().awaitReady();
             }
-		} catch (final Exception e) {
+		}
+		catch (final Exception e)
+		{
 			logger.error("Exception!", e);
 		}
         Utils.registerCommands();
 	}
 
-	static void handleCommand(final CommandParser.CommandContainer cmd) {
-		if (commands.containsKey(cmd.invoke)) {
+	static void handleCommand(final CommandParser.CommandContainer cmd)
+	{
+		if (commands.containsKey(cmd.invoke))
 			EXECUTOR.submit(() -> commands.get(cmd.invoke).action(cmd.event));
-		}
 	}
-
 }

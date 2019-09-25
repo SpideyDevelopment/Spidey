@@ -7,64 +7,103 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-@SuppressWarnings("SqlNoDataSourceInspection")
-public class MySQL {
+@SuppressWarnings("ConstantConditions")
+public class MySQL
+{
+	private MySQL()
+	{
+		super();
+	}
 
 	private static Connection c;
+	private static final Logger LOG = LoggerFactory.getLogger(MySQL.class);
+	private static final String GUILDS_STATEMENT = "SELECT *, COUNT(*) AS total FROM `guilds` WHERE `guild_id`=? LIMIT 1;";
 
-	private MySQL() { super(); }
-
-	private static final Logger logger = LoggerFactory.getLogger(MySQL.class);
-
-	public static synchronized Long getChannelId(final Long serverId) {
-		try {
-			c = DriverManager.getConnection("jdbc:mysql://" + Secrets.HOST + ":" + Secrets.PORT + "/" + Secrets.DATABASE, Secrets.USERNAME, Secrets.PASS);
-			final var ps = c.prepareStatement("SELECT *, COUNT(*) AS total FROM `servers` WHERE `server_id`=? LIMIT 1;");
-			ps.setLong(1, serverId);
-			final var rs = ps.executeQuery();
-			rs.next();
-			if (rs.getInt("total") != 0) {
-				final Long l = rs.getLong("channel_id");
-				rs.close();
-				ps.close();
-				c.close();
-				return l;
-			}
+	private static Connection getConnection()
+	{
+		try
+		{
+			return DriverManager.getConnection("jdbc:mysql://localhost:3306/boti", Secrets.USERNAME, Secrets.PASS);
 		}
-		catch (final SQLException e) {
-			logger.error("Exception!", e);
+		catch (final SQLException e)
+		{
+			LOG.error("There was an error establishing the connection to the database!", e);
 		}
 		return null;
 	}
 
-	public static synchronized void insertData(final Long serverId, final Long channelId) {
-		try {
-			c = DriverManager.getConnection("jdbc:mysql://" + Secrets.HOST + ":" + Secrets.PORT + "/" + Secrets.DATABASE, Secrets.USERNAME, Secrets.PASS);
-			final var ps = c.prepareStatement("INSERT INTO `servers` (`server_id`, `channel_id`) VALUES (?, ?);");
-			ps.setLong(1, serverId);
-			ps.setLong(2, channelId);
+	public static long getChannel(final long guildId)
+	{
+		c = getConnection();
+		if (!hasChannel(guildId))
+			return 0;
+
+		try (final var ps = c.prepareStatement(GUILDS_STATEMENT))
+		{
+            ps.setLong(1, guildId);
+            try (final var rs = ps.executeQuery())
+			{
+                rs.next();
+                return rs.getLong("channel_id");
+            }
+		}
+		catch (final SQLException e)
+		{
+			LOG.error("There was an error while requesting the log channel id for guild {}!", guildId, e);
+		}
+		return 0;
+	}
+
+	public static void upsertChannel(final long guildId, final long channelId)
+	{
+		c = getConnection();
+		try (final var ps = c.prepareStatement("UPDATE `guilds` SET `channel_id`=? WHERE `guild_id`=?;"))
+		{
+			ps.setLong(1, channelId);
+			ps.setLong(2, guildId);
 			ps.executeUpdate();
-			ps.close();
 			c.close();
 		}
-		catch (final SQLException e) {
-			logger.error("Exception!", e);
+		catch (final SQLException e)
+		{
+			LOG.error("There was an error while upserting the log channel id for guild {}!", guildId, e);
 		}
 	}
 
-	public static synchronized void removeData(final Long serverId) {
-		try {
+	public static void removeChannel(final long guildId)
+	{
+		c = getConnection();
+		if (!hasChannel(guildId))
+			return;
 
-			c = DriverManager.getConnection("jdbc:mysql://" + Secrets.HOST + ":" + Secrets.PORT + "/" + Secrets.DATABASE, Secrets.USERNAME, Secrets.PASS);
-			final var ps = c.prepareStatement("DELETE FROM `servers` WHERE `server_id`=?;");
-			ps.setLong(1, serverId);
+		try (final var ps = c.prepareStatement("DELETE FROM `guilds` WHERE `guild_id`=?;"))
+		{
+			ps.setLong(1, guildId);
 			ps.executeUpdate();
-			ps.close();
 			c.close();
 		}
-
-		catch (final SQLException e) {
-			logger.error("Exception!", e);
+		catch (final SQLException e)
+		{
+			LOG.error("There was an error while removing the log channel id of guild {}!", guildId, e);
 		}
+	}
+
+	public static boolean hasChannel(final long guildId)
+	{
+		c = getConnection();
+		try (final var ps = c.prepareStatement(GUILDS_STATEMENT))
+		{
+			ps.setLong(1, guildId);
+			try (final var rs = ps.executeQuery())
+			{
+				rs.next();
+				return rs.getInt("total") != 0;
+			}
+		}
+		catch (final SQLException e)
+		{
+			LOG.error("There was an error while checking if guild {} has a log channel set!", guildId, e);
+		}
+		return false;
 	}
 }

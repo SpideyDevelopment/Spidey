@@ -1,41 +1,42 @@
 package me.canelex.spidey.commands;
 
+import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.Utils;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.TimeZone;
 
 @SuppressWarnings("unused")
-public class UserCommand implements ICommand {
-
+public class UserCommand implements ICommand
+{
 	private final Locale locale = new Locale("en", "EN");
 	private final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/London"));
 	private final SimpleDateFormat date = new SimpleDateFormat("EEEE, d.LLLL Y", locale);
 	private final SimpleDateFormat time = new SimpleDateFormat("HH:mm:ss", locale);
 
 	@Override
-	public final void action(final GuildMessageReceivedEvent e) {
-
-		final var eb = Utils.createEmbedBuilder(e.getAuthor());
+	public final void action(final GuildMessageReceivedEvent e)
+	{
+		final var author = e.getAuthor();
+		final var eb = Utils.createEmbedBuilder(author);
 		final var musers = e.getMessage().getMentionedUsers();
-		final var u = musers.isEmpty() ? e.getAuthor() : musers.get(0);
-		final var m = e.getGuild().getMember(u);
+		final var u = musers.isEmpty() ? author : musers.get(0);
+		final var guild = e.getGuild();
+		final var m = guild.getMember(u);
+		final var nick = m.getNickname();
 		
 		eb.setAuthor("USER INFO - " + u.getAsTag());
 		eb.setColor(Color.WHITE);
-		eb.setThumbnail(u.getEffectiveAvatarUrl());
+		eb.setThumbnail(u.getAvatarUrl());
 		eb.addField("ID", u.getId(), false);
 
-		if (Objects.requireNonNull(m).getNickname() != null) {
-			eb.addField("Nickname for this guild", m.getNickname(), false);
-		}
+		if (nick != null)
+			eb.addField("Nickname for this guild", nick, false);
 
 		cal.setTimeInMillis(u.getTimeCreated().toInstant().toEpochMilli());
 		final var creatdate = date.format(cal.getTime());
@@ -49,34 +50,30 @@ public class UserCommand implements ICommand {
 
 		eb.addField("User joined", String.format( "%s | %s UTC", joindate, jointime), false);
 
-		if (e.getGuild().getBoosters().contains(m)) {
-			cal.setTimeInMillis(Objects.requireNonNull(m.getTimeBoosted()).toInstant().toEpochMilli());
+		if (guild.getBoosters().contains(m))
+		{
+			cal.setTimeInMillis(m.getTimeBoosted().toInstant().toEpochMilli());
 			final var boostdate = date.format(cal.getTime());
 			final var boosttime = time.format(cal.getTime());
 			eb.addField("Boosting since", String.format("%s | %s UTC", boostdate, boosttime), false);
 		}
 
-		if (!m.getRoles().isEmpty()) {
-
+		if (!m.getRoles().isEmpty())
+		{
 			var i = 0;
 			final var s = new StringBuilder();
 
-			for (final var role : m.getRoles()) {
+			for (final var role : m.getRoles())
+			{
 				i++;
-				if (i == m.getRoles().size()) {
+				if (i == m.getRoles().size())
 					s.append(role.getName());
-				}
-				else {
+				else
 					s.append(role.getName()).append(", ");
-				}
 			}
-
 			eb.addField("Roles [**" + i + "**]", s.toString(), false);
-
 		}
-
 		Utils.sendMessage(e.getChannel(), eb.build());
-
 	}
 
 	@Override
@@ -89,5 +86,4 @@ public class UserCommand implements ICommand {
 	public final Category getCategory() { return Category.INFORMATIVE; }
 	@Override
 	public final String getUsage() { return "s!user (@someone)"; }
-
 }

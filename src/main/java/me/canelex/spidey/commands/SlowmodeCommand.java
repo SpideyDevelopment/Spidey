@@ -1,51 +1,46 @@
 package me.canelex.spidey.commands;
 
+import me.canelex.jda.api.Permission;
+import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.PermissionError;
 import me.canelex.spidey.utils.Utils;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 @SuppressWarnings("unused")
-public class SlowmodeCommand implements ICommand {
-
+public class SlowmodeCommand implements ICommand
+{
 	@Override
-	public final void action(final GuildMessageReceivedEvent e) {
-
-		final var neededPerm = "ADMINISTRATOR";
-
-		if (e.getMember() != null && !Utils.hasPerm(e.getMember(), Permission.valueOf(neededPerm))) {
-
-			Utils.sendMessage(e.getChannel(), PermissionError.getErrorMessage(neededPerm), false);
-
-		}
-
-		else {
-
+	public final void action(final GuildMessageReceivedEvent e)
+	{
+		final var member = e.getMember();
+		final var channel = e.getChannel();
+		if (member != null && !Utils.hasPerm(member, Permission.MANAGE_CHANNEL))
+			Utils.sendMessage(channel, PermissionError.getErrorMessage("MANAGE_CHANNEL"), false);
+		else
+		{
 			var seconds = 0;
 			final var par = e.getMessage().getContentRaw().substring(11);
-			if (par.equals("off") || par.equals("false")) {
+			if (par.equals("off") || par.equals("false"))
 				seconds = 0;
-			}
-			else {
-				try {
+			else
+			{
+				try
+				{
 					seconds = Math.max(0, Math.min(Integer.parseInt(par), 21600));
 				}
-				catch (final NumberFormatException ignored) {
-					Utils.sendMessage(e.getChannel(), ":no_entry: Couldn't parse argument.", false);
+				catch (final NumberFormatException ignored)
+				{
+					Utils.sendMessage(channel, ":no_entry: Couldn't parse argument.", false);
 					return;
 				}
 			}
-
-			e.getChannel().getManager().setSlowmode(seconds).queue();
-
+			channel.getManager().setSlowmode(seconds).queue();
 		}
-
 	}
 
 	@Override
-	public final String getDescription() { return "Sets a slowmode for channel. Limit: `21600s` - `6h`. Example - `s!slowmode <seconds | off>`"; }
+	public final String getDescription() { return "Sets the slowmode of the channel. Limit: `21600s` - `6h`. Example - `s!slowmode <seconds | off>`"; }
 	@Override
 	public final boolean isAdmin() { return true; }
 	@Override
@@ -54,5 +49,4 @@ public class SlowmodeCommand implements ICommand {
 	public final Category getCategory() { return Category.MODERATION; }
 	@Override
 	public final String getUsage() { return "s!slowmode <seconds/off>"; }
-
 }
