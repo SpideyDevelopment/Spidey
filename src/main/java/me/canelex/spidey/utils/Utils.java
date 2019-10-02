@@ -140,13 +140,9 @@ public class Utils extends Core
 		var content = "";
 		try
 		{
-			final var obj = new URL(url);
-			final var con = (HttpURLConnection) obj.openConnection();
-
+			final var con = (HttpURLConnection) new URL(url).openConnection();
 			con.setRequestMethod("GET");
-
-			final var userAgent = "me.canelex.spidey";
-			con.setRequestProperty("User-Agent", userAgent);
+			con.setRequestProperty("User-Agent", "me.canelex.spidey");
 
 			final var in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			var inputLine = "";
