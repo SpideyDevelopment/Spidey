@@ -23,7 +23,7 @@ public class MySQL
 	{
 		try
 		{
-			return DriverManager.getConnection("jdbc:mysql://localhost:3306/boti", Secrets.USERNAME, Secrets.PASS);
+			return DriverManager.getConnection("jdbc:mysql://localhost:3306/canelex", Secrets.USERNAME, Secrets.PASS);
 		}
 		catch (final SQLException e)
 		{
@@ -57,10 +57,10 @@ public class MySQL
 	public static void upsertChannel(final long guildId, final long channelId)
 	{
 		c = getConnection();
-		try (final var ps = c.prepareStatement("UPDATE `guilds` SET `channel_id`=? WHERE `guild_id`=?;"))
+		try (final var ps = c.prepareStatement("REPLACE INTO `guilds` (`guild_id`, `channel_id`) VALUES (?, ?);"))
 		{
-			ps.setLong(1, channelId);
-			ps.setLong(2, guildId);
+			ps.setLong(1, guildId);
+			ps.setLong(2, channelId);
 			ps.executeUpdate();
 			c.close();
 		}
