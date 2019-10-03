@@ -2,7 +2,8 @@ package me.canelex.spidey.objects.invites;
 
 import me.canelex.jda.api.entities.Invite;
 
-public class WrappedInvite {
+public class WrappedInvite
+{
     long guildId;
     int uses;
 
@@ -20,5 +21,10 @@ public class WrappedInvite {
     public int getUses()
     {
         return uses;
+    }
+
+    public void incrementUses()
+    {
+        this.uses++;
     }
 }

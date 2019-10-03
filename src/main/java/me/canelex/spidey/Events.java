@@ -145,10 +145,10 @@ public class Events extends ListenerAdapter
 				invites.forEach(invite ->
 				{
 					final var code = invite.getCode();
-
-					if (invite.getUses() > invitesMap.get(code).getUses())
+					final var wrappedInvite = invitesMap.get(code);
+					if (invite.getUses() > wrappedInvite.getUses())
 					{
-						invitesMap.put(code, new WrappedInvite(invite));
+						wrappedInvite.incrementUses();
 						eb.addField("Invite link", "**" + invite.getUrl() + "**", false);
 						eb.addField("Inviter", "**" + invite.getInviter().getAsTag() + "**", true);
 					}
