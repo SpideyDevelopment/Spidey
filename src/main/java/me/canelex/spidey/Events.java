@@ -17,8 +17,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("ConstantConditions")
 public class Events extends ListenerAdapter
@@ -141,21 +139,25 @@ public class Events extends ListenerAdapter
 			{
 				invites.forEach(invite ->
 				{
-					if (invite.getUses() > invitesMap.get(invite.getCode()))
+					final var uses = invite.getUses();
+					final var code = invite.getCode();
+
+					if (uses > invitesMap.get(code))
 					{
+						invitesMap.put(code, uses);
 						eb.addField("Invite link", "**" + invite.getUrl() + "**", false);
 						eb.addField("Inviter", "**" + invite.getInviter().getAsTag() + "**", true);
 					}
 				});
 				Utils.sendMessage(channel, eb.build());
-			}); //TODO could be a race condition, have a look at it later
+			});
 		}
 	}
 
 	@Override
 	public final void onGuildReady(@NotNull final GuildReadyEvent e)
 	{
-		Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> e.getGuild().retrieveInvites().queue(invites -> invites.forEach(invite -> invitesMap.put(invite.getCode(), invite.getUses()))), 0L, 10L, TimeUnit.SECONDS);
+		e.getGuild().retrieveInvites().queue(invites -> invites.forEach(invite -> invitesMap.put(invite.getCode(), invite.getUses())));
 	}
 
 	@Override
