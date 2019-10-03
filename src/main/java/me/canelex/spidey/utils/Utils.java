@@ -7,7 +7,9 @@ import me.canelex.jda.api.Permission;
 import me.canelex.jda.api.entities.*;
 import me.canelex.jda.api.utils.data.DataObject;
 import me.canelex.spidey.Core;
+import me.canelex.spidey.Events;
 import me.canelex.spidey.objects.command.ICommand;
+import me.canelex.spidey.objects.invites.WrappedInvite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -166,4 +168,8 @@ public class Utils extends Core
 		return DataObject.fromJson(getSiteContent(url));
 	}
 
+	public static void storeInvites(final Guild guild)
+	{
+		guild.retrieveInvites().queue(invites -> invites.forEach(invite -> Events.getInvites().put(invite.getCode(), new WrappedInvite(invite))));
+	}
 }

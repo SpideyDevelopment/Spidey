@@ -3,25 +3,30 @@ package me.canelex.spidey;
 import me.canelex.jda.api.EmbedBuilder;
 import me.canelex.jda.api.audit.ActionType;
 import me.canelex.jda.api.entities.MessageType;
-import me.canelex.jda.api.events.guild.GuildBanEvent;
-import me.canelex.jda.api.events.guild.GuildLeaveEvent;
-import me.canelex.jda.api.events.guild.GuildReadyEvent;
-import me.canelex.jda.api.events.guild.GuildUnbanEvent;
+import me.canelex.jda.api.events.ShutdownEvent;
+import me.canelex.jda.api.events.guild.*;
 import me.canelex.jda.api.events.guild.member.GuildMemberJoinEvent;
 import me.canelex.jda.api.events.guild.member.GuildMemberLeaveEvent;
 import me.canelex.jda.api.events.guild.update.GuildUpdateBoostTierEvent;
 import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import me.canelex.jda.api.hooks.ListenerAdapter;
+import me.canelex.spidey.objects.invites.WrappedInvite;
 import me.canelex.spidey.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @SuppressWarnings("ConstantConditions")
 public class Events extends ListenerAdapter
 {
-	private final ConcurrentHashMap<String, Integer> invitesMap = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, WrappedInvite> invitesMap = new ConcurrentHashMap<>();
+
+	public static ConcurrentMap<String, WrappedInvite> getInvites()
+	{
+		return invitesMap;
+	}
 
 	@Override
 	public final void onGuildMessageReceived(final GuildMessageReceivedEvent e)
@@ -139,12 +144,11 @@ public class Events extends ListenerAdapter
 			{
 				invites.forEach(invite ->
 				{
-					final var uses = invite.getUses();
 					final var code = invite.getCode();
 
-					if (uses > invitesMap.get(code))
+					if (invite.getUses() > invitesMap.get(code).getUses())
 					{
-						invitesMap.put(code, uses);
+						invitesMap.put(code, new WrappedInvite(invite));
 						eb.addField("Invite link", "**" + invite.getUrl() + "**", false);
 						eb.addField("Inviter", "**" + invite.getInviter().getAsTag() + "**", true);
 					}
@@ -157,13 +161,21 @@ public class Events extends ListenerAdapter
 	@Override
 	public final void onGuildReady(@NotNull final GuildReadyEvent e)
 	{
-		e.getGuild().retrieveInvites().queue(invites -> invites.forEach(invite -> invitesMap.put(invite.getCode(), invite.getUses())));
+		Utils.storeInvites(e.getGuild());
+	}
+
+	@Override
+	public final void onGuildJoin(final GuildJoinEvent e)
+	{
+		Utils.storeInvites(e.getGuild());
 	}
 
 	@Override
 	public final void onGuildLeave(final GuildLeaveEvent e)
 	{
-		MySQL.removeChannel(e.getGuild().getIdLong());
+		final var id = e.getGuild().getIdLong();
+		invitesMap.entrySet().removeIf(entry -> entry.getValue().getGuildId() == id);
+		MySQL.removeChannel(id);
 	}
 
 	@Override
@@ -181,5 +193,11 @@ public class Events extends ListenerAdapter
 			eb.addField("Boosts", "**" + guild.getBoostCount() + "**", true);
 			Utils.sendMessage(channel, eb.build());
 		}
+	}
+
+	@Override
+	public final void onShutdown(@NotNull final ShutdownEvent e)
+	{
+		invitesMap.clear();
 	}
 }
