@@ -18,7 +18,7 @@ public class Core
 {
 	static final CommandParser parser = new CommandParser();
 	protected static final Map<String, ICommand> commands = new HashMap<>();
-	private static final Logger logger = LoggerFactory.getLogger(Core.class);
+	private static final Logger LOG = LoggerFactory.getLogger(Core.class);
 	private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
 	public static void main(final String[] args)
@@ -36,7 +36,7 @@ public class Core
 		}
 		catch (final Exception e)
 		{
-			logger.error("Exception!", e);
+			LOG.error("There was an error while building JDA!", e);
 		}
         Utils.registerCommands();
 	}
