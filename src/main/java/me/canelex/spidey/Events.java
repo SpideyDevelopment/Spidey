@@ -5,6 +5,7 @@ import me.canelex.jda.api.audit.ActionType;
 import me.canelex.jda.api.entities.MessageType;
 import me.canelex.jda.api.events.guild.GuildBanEvent;
 import me.canelex.jda.api.events.guild.GuildLeaveEvent;
+import me.canelex.jda.api.events.guild.GuildReadyEvent;
 import me.canelex.jda.api.events.guild.GuildUnbanEvent;
 import me.canelex.jda.api.events.guild.member.GuildMemberJoinEvent;
 import me.canelex.jda.api.events.guild.member.GuildMemberLeaveEvent;
@@ -15,10 +16,15 @@ import me.canelex.spidey.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("ConstantConditions")
 public class Events extends ListenerAdapter
 {
+	private final ConcurrentHashMap<String, Integer> invitesMap = new ConcurrentHashMap<>();
+
 	@Override
 	public final void onGuildMessageReceived(final GuildMessageReceivedEvent e)
 	{
@@ -130,8 +136,26 @@ public class Events extends ListenerAdapter
 			eb.setColor(Color.GREEN);
 			eb.addField("User", "**" + user.getAsTag() + "**", true);
 			eb.addField("ID", "**" + user.getId() + "**", true);
-			Utils.sendMessage(channel, eb.build());
+
+			guild.retrieveInvites().queue(invites ->
+			{
+				invites.forEach(invite ->
+				{
+					if (invite.getUses() > invitesMap.get(invite.getCode()))
+					{
+						eb.addField("Invite link", "**" + invite.getUrl() + "**", false);
+						eb.addField("Inviter", "**" + invite.getInviter().getAsTag() + "**", true);
+					}
+				});
+				Utils.sendMessage(channel, eb.build());
+			}); //TODO could be a race condition, have a look at it later
 		}
+	}
+
+	@Override
+	public final void onGuildReady(@NotNull final GuildReadyEvent e)
+	{
+		Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> e.getGuild().retrieveInvites().queue(invites -> invites.forEach(invite -> invitesMap.put(invite.getCode(), invite.getUses()))), 0L, 10L, TimeUnit.SECONDS);
 	}
 
 	@Override
