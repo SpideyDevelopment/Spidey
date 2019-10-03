@@ -146,7 +146,7 @@ public class Events extends ListenerAdapter
 				{
 					final var code = invite.getCode();
 					final var wrappedInvite = invitesMap.get(code);
-					if (invite.getUses() > wrappedInvite.getUses())
+					if (invitesMap.containsKey(code) && invite.getUses() > wrappedInvite.getUses())
 					{
 						wrappedInvite.incrementUses();
 						eb.addField("Invite link", "**" + invite.getUrl() + "**", false);
@@ -161,13 +161,17 @@ public class Events extends ListenerAdapter
 	@Override
 	public final void onGuildReady(@NotNull final GuildReadyEvent e)
 	{
-		Utils.storeInvites(e.getGuild());
+		final var guild = e.getGuild();
+		Utils.storeInvites(guild);
+		Utils.startInvitesCheck(guild);
 	}
 
 	@Override
 	public final void onGuildJoin(final GuildJoinEvent e)
 	{
-		Utils.storeInvites(e.getGuild());
+		final var guild = e.getGuild();
+		Utils.storeInvites(guild);
+		Utils.startInvitesCheck(guild);
 	}
 
 	@Override
@@ -175,6 +179,7 @@ public class Events extends ListenerAdapter
 	{
 		final var id = e.getGuild().getIdLong();
 		invitesMap.entrySet().removeIf(entry -> entry.getValue().getGuildId() == id);
+		Utils.stopInvitesCheck(id);
 		MySQL.removeChannel(id);
 	}
 
