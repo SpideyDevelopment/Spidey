@@ -189,13 +189,15 @@ public class Utils extends Core
         SCHEDULERS.put(guild.getIdLong(), EXECUTOR.scheduleAtFixedRate(() ->
             guild.retrieveInvites().queue(invites ->
             {
+                final var invitesMap = Events.getInvites();
+                final var jda = guild.getJDA();
                 invites.forEach(invite ->
                 {
                     final var code = invite.getCode();
-                    if (!Events.getInvites().containsKey(code))
-                        Events.getInvites().put(code, new WrappedInvite(invite)); // an invite was created and we did not store it yet so we store it now
+                    if (!invitesMap.containsKey(code))
+                        invitesMap.put(code, new WrappedInvite(invite)); // an invite was created and we did not store it yet so we store it now
                 });
-                Events.getInvites().forEach((key, value) -> Invite.resolve(guild.getJDA(), key).queue(success -> {}, failure -> Events.getInvites().remove(key))); // an invite was deleted so we remove it from the map
+                invitesMap.forEach((key, value) -> Invite.resolve(jda, key).queue(null, failure -> invitesMap.remove(key))); // an invite was deleted so we remove it from the map
             }), 60L, 30L, TimeUnit.SECONDS));
     }
 }
