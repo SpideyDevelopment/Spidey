@@ -14,7 +14,7 @@ public class GoogleSearchCommand implements ICommand
 	public final void action(final GuildMessageReceivedEvent e)
 	{
 		final var args = e.getMessage().getContentRaw().split("\\s+");
-		final var result = GoogleSearch.performSearch(
+		final var result = new GoogleSearch().getResult(
 				StringUtils.join(args, "+", 1, args.length));
 		Utils.sendMessage(e.getChannel(), result.getContent(), false);
 	}
