@@ -15,6 +15,7 @@ import me.canelex.spidey.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -47,6 +48,7 @@ public class Events extends ListenerAdapter
 			eb.setAuthor("NEW BOOST");
 			eb.setColor(16023551);
 			eb.setThumbnail(author.getAvatarUrl());
+			eb.setTimestamp(Instant.now());
 			eb.addField("Booster", "**" + author.getAsTag() + "**", true);
 			eb.addField("Boosts", "**" + guild.getBoostCount() + "**", true);
 
@@ -77,6 +79,7 @@ public class Events extends ListenerAdapter
 			eb.setAuthor("NEW BAN");
 			eb.setThumbnail(user.getAvatarUrl());
 			eb.setColor(Color.RED);
+			eb.setTimestamp(Instant.now());
 			eb.addField("User", "**" + user.getAsTag() + "**", true);
 			eb.addField("ID", "**" + user.getId() + "**", true);
 			eb.addField("Moderator", banner == null ? "Unknown" : banner.getAsMention(), true);
@@ -99,6 +102,7 @@ public class Events extends ListenerAdapter
 			eb.setAuthor("UNBAN");
 			eb.setColor(Color.GREEN);
 			eb.setThumbnail(user.getAvatarUrl());
+			eb.setTimestamp(Instant.now());
 			eb.addField("User", "**" + user.getAsTag() + "**", true);
 			eb.addField("ID", "**" + user.getId() + "**", true);
 			Utils.sendMessage(channel, eb.build());
@@ -118,6 +122,7 @@ public class Events extends ListenerAdapter
 			eb.setAuthor("USER HAS LEFT");
 			eb.setThumbnail(user.getAvatarUrl());
 			eb.setColor(Color.RED);
+			eb.setTimestamp(Instant.now());
 			eb.addField("User", "**" + user.getAsTag() + "**", true);
 			eb.addField("ID", "**" + user.getId() + "**", true);
 			Utils.sendMessage(channel, eb.build());
@@ -137,6 +142,7 @@ public class Events extends ListenerAdapter
 			eb.setAuthor("USER HAS JOINED");
 			eb.setThumbnail(user.getAvatarUrl());
 			eb.setColor(Color.GREEN);
+			eb.setTimestamp(Instant.now());
 			eb.addField("User", "**" + user.getAsTag() + "**", true);
 			eb.addField("ID", "**" + user.getId() + "**", true);
 
@@ -194,6 +200,7 @@ public class Events extends ListenerAdapter
 			final var eb = new EmbedBuilder();
 			eb.setAuthor("GUILD BOOST TIER HAS CHANGED");
 			eb.setColor(16023551);
+			eb.setTimestamp(Instant.now());
 			eb.addField("Boost tier", "**" + e.getNewBoostTier().getKey() + "**", true);
 			eb.addField("Boosts", "**" + guild.getBoostCount() + "**", true);
 			Utils.sendMessage(channel, eb.build());

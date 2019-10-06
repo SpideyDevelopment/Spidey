@@ -7,6 +7,7 @@ import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.Utils;
 
 import java.awt.*;
+import java.time.Instant;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
@@ -29,6 +30,7 @@ public class MembercountCommand implements ICommand
 		final var eb = Utils.createEmbedBuilder(e.getAuthor());
 		eb.setAuthor("MEMBERCOUNT");
 		eb.setColor(Color.WHITE);
+		eb.setTimestamp(Instant.now());
 		eb.addField("Total", "**" + total + "**", true);
 		eb.addField("People", "**" + (total - bots) + "**", true);
 		eb.addField("Bots", "**" + bots + "**", true);
