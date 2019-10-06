@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -78,7 +77,7 @@ public class Utils extends Core
 
     public static EmbedBuilder createEmbedBuilder(final User u)
     {
-        return new EmbedBuilder().setFooter("Command executed by " + u.getAsTag(), u.getAvatarUrl()).setTimestamp(Instant.now());
+        return new EmbedBuilder().setFooter("Command executed by " + u.getAsTag(), u.getAvatarUrl());
     }
 
     public static String getInviteUrl(final long guildId)
