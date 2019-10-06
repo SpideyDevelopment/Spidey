@@ -173,6 +173,18 @@ public class Events extends ListenerAdapter
 	}
 
 	@Override
+	public final void onGuildUnavailable(@NotNull final GuildUnavailableEvent e)
+	{
+		Utils.stopInvitesCheck(e.getGuild().getIdLong());
+	}
+
+	@Override
+	public final void onGuildAvailable(@NotNull final GuildAvailableEvent e)
+	{
+		Utils.startInvitesCheck(e.getGuild());
+	}
+
+	@Override
 	public final void onGuildJoin(final GuildJoinEvent e)
 	{
 		final var guild = e.getGuild();
