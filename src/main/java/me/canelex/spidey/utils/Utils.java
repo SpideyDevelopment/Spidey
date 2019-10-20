@@ -25,7 +25,7 @@ import java.util.concurrent.*;
 
 public class Utils extends Core
 {
-    private static final String INVITE_LINK = "https://discordapp.com/oauth2/authorize?client_id=468523263853592576&scope=bot&permissions=268446900";
+    private static final String INVITE_LINK = "https://discordapp.com/oauth2/authorize?client_id=468523263853592576&scope=bot&permissions=1342188724";
     private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
     private static final ClassGraph graph = new ClassGraph().whitelistPackages("me.canelex.spidey.commands").enableAllInfo().ignoreClassVisibility();
     private static final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Invites-Check").setUncaughtExceptionHandler((t, e) -> LOG.error("There was an exception in thread {}: {}", t.getName(), e.getMessage())).build();
@@ -82,7 +82,7 @@ public class Utils extends Core
 
     public static String getInviteUrl(final long guildId)
     {
-        return String.format("https://discordapp.com/oauth2/authorize?client_id=468523263853592576&guild_id=%s&scope=bot&permissions=268446900", guildId);
+        return String.format("https://discordapp.com/oauth2/authorize?client_id=468523263853592576&guild_id=%s&scope=bot&permissions=1342188724", guildId);
     }
 
     public static String getInviteUrl()
@@ -156,7 +156,8 @@ public class Utils extends Core
             var inputLine = "";
             final var response = new StringBuilder();
 
-            while ((inputLine = in.readLine()) != null) {
+            while ((inputLine = in.readLine()) != null)
+            {
                 response.append(inputLine);
             }
             in.close();
@@ -179,9 +180,11 @@ public class Utils extends Core
         guild.retrieveInvites().queue(invites -> invites.forEach(invite -> Events.getInvites().put(invite.getCode(), new WrappedInvite(invite))));
     }
 
-    public static void stopInvitesCheck(final long id)
+    public static void stopInvitesCheck(final Guild guild)
     {
+        final var id = guild.getIdLong();
         SCHEDULERS.get(id).cancel(true);
+        SCHEDULERS.remove(id);
     }
 
     public static void startInvitesCheck(final Guild guild)
@@ -191,12 +194,7 @@ public class Utils extends Core
             {
                 final var invitesMap = Events.getInvites();
                 final var jda = guild.getJDA();
-                invites.forEach(invite ->
-                {
-                    final var code = invite.getCode();
-                    if (!invitesMap.containsKey(code))
-                        invitesMap.put(code, new WrappedInvite(invite)); // an invite was created and we did not store it yet so we store it now
-                });
+                invites.forEach(invite -> invitesMap.computeIfAbsent(invite.getCode(), ignored -> new WrappedInvite(invite))); // an invite was created so we store it
                 invitesMap.forEach((key, value) -> Invite.resolve(jda, key).queue(null, failure -> invitesMap.remove(key))); // an invite was deleted so we remove it from the map
             }), 60L, 30L, TimeUnit.SECONDS));
     }
