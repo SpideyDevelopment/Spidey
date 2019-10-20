@@ -148,7 +148,7 @@ public class Events extends ListenerAdapter
 
 			guild.retrieveInvites().queue(invites ->
 			{
-				invites.forEach(invite ->
+				for (var invite : invites)
 				{
 					final var code = invite.getCode();
 					final var wrappedInvite = invitesMap.get(code);
@@ -157,8 +157,9 @@ public class Events extends ListenerAdapter
 						wrappedInvite.incrementUses();
 						eb.addField("Invite link", "**" + invite.getUrl() + "**", false);
 						eb.addField("Inviter", "**" + invite.getInviter().getAsTag() + "**", true);
+						break;
 					}
-				});
+				}
 				Utils.sendMessage(channel, eb.build());
 			});
 		}
@@ -175,7 +176,7 @@ public class Events extends ListenerAdapter
 	@Override
 	public final void onGuildUnavailable(@NotNull final GuildUnavailableEvent e)
 	{
-		Utils.stopInvitesCheck(e.getGuild().getIdLong());
+		Utils.stopInvitesCheck(e.getGuild());
 	}
 
 	@Override
@@ -195,10 +196,11 @@ public class Events extends ListenerAdapter
 	@Override
 	public final void onGuildLeave(final GuildLeaveEvent e)
 	{
-		final var id = e.getGuild().getIdLong();
+		final var guild = e.getGuild();
+		final var id = guild.getIdLong();
 		invitesMap.entrySet().removeIf(entry -> entry.getValue().getGuildId() == id);
-		Utils.stopInvitesCheck(id);
 		MySQL.removeChannel(id);
+		Utils.stopInvitesCheck(guild);
 	}
 
 	@Override

@@ -36,7 +36,8 @@ public class HelpCommand extends Core implements ICommand
                 commands.keySet().removeIf(com -> Core.commands.get(com).isAdmin());
 
             final HashMap<Category, List<ICommand>> categories = new HashMap<>();
-            commands.values().forEach(cmd -> {
+            commands.values().forEach(cmd ->
+            {
                 final var list = categories.computeIfAbsent(cmd.getCategory(), ignored -> new ArrayList<>());
                 list.add(cmd);
             });
@@ -64,7 +65,7 @@ public class HelpCommand extends Core implements ICommand
                 eb.setAuthor("Viewing command info - " + cmd);
                 eb.setColor(Color.WHITE);
                 eb.addField("Description", command.getDescription() == null ? "Unspecified" : command.getDescription(), false);
-                eb.addField("Usage", command.getUsage() == null ? "Unspecified" : "`" + command.getUsage() + "`", false);
+                eb.addField("Usage", command.getUsage() == null ? "Unspecified" : "`" + command.getUsage() + "` (<> = required, () = optional)", false);
                 eb.addField("Category",  command.getCategory().friendlyName(), false);
                 Utils.sendMessage(channel, eb.build());
             }
@@ -87,9 +88,9 @@ public class HelpCommand extends Core implements ICommand
     @Override
     public final String getInvoke() { return "help"; }
     @Override
-    public final String getDescription() { return "Shows help message"; }
+    public final String getDescription() { return "Shows the help message"; }
     @Override
-    public final String getUsage() { return "s!help (<command>)"; }
+    public final String getUsage() { return "s!help (command)"; }
     @Override
     public final Category getCategory() { return Category.INFORMATIVE; }
     @Override

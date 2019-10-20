@@ -9,6 +9,7 @@ public enum Category
     SOCIAL("\uD83D\uDCF1 Social");
 
     private final String friendlyName;
+
     Category(final String friendlyName)
     {
         this.friendlyName = friendlyName;
