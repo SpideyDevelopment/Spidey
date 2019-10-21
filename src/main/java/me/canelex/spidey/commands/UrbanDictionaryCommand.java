@@ -1,6 +1,6 @@
 package me.canelex.spidey.commands;
 
-import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import me.canelex.jda.api.entities.Message;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.objects.json.UrbanDictionary;
@@ -11,10 +11,10 @@ import me.canelex.spidey.utils.Utils;
 public class UrbanDictionaryCommand implements ICommand
 {
 	@Override
-	public final void action(final GuildMessageReceivedEvent e)
+	public final void action(final String[] args, final Message message)
 	{
-		final var term = e.getMessage().getContentRaw().substring(5);
-		final var channel = e.getChannel();
+		final var term = message.getContentRaw().substring(5);
+		final var channel = message.getChannel();
 		try
 		{
 			final var ud = new UrbanDictionary().getTerm(term);
@@ -38,8 +38,6 @@ public class UrbanDictionaryCommand implements ICommand
 
 	@Override
 	public final String getDescription() { return "Returns the definition(s) of a phrase"; }
-	@Override
-	public final boolean isAdmin() { return false; }
 	@Override
 	public final String getInvoke() { return "ud"; }
 	@Override

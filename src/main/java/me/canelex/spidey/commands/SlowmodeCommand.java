@@ -1,7 +1,8 @@
 package me.canelex.spidey.commands;
 
 import me.canelex.jda.api.Permission;
-import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import me.canelex.jda.api.entities.Message;
+import me.canelex.jda.api.entities.TextChannel;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.PermissionError;
@@ -11,23 +12,21 @@ import me.canelex.spidey.utils.Utils;
 public class SlowmodeCommand implements ICommand
 {
 	@Override
-	public final void action(final GuildMessageReceivedEvent e)
+	public final void action(final String[] args, final Message message)
 	{
-		final var member = e.getMember();
-		final var channel = e.getChannel();
-		if (member != null && !Utils.hasPerm(member, Permission.MANAGE_CHANNEL))
-			Utils.sendMessage(channel, PermissionError.getErrorMessage("MANAGE_CHANNEL"), false);
+		final var channel = message.getChannel();
+		final var requiredPermission = getRequiredPermission();
+		if (!Utils.hasPerm(message.getMember(), requiredPermission))
+			Utils.sendMessage(channel, PermissionError.getErrorMessage(requiredPermission), false);
 		else
 		{
 			var seconds = 0;
-			final var par = e.getMessage().getContentRaw().substring(11);
-			if (par.equals("off") || par.equals("false"))
-				seconds = 0;
-			else
+			final var par = message.getContentRaw().substring(11);
+			if (!(par.equalsIgnoreCase("off") || par.equalsIgnoreCase("false")))
 			{
 				try
 				{
-					seconds = Math.max(0, Math.min(Integer.parseInt(par), 21600));
+					seconds = Math.max(0, Math.min(Integer.parseInt(par), TextChannel.MAX_SLOWMODE));
 				}
 				catch (final NumberFormatException ignored)
 				{
@@ -35,14 +34,19 @@ public class SlowmodeCommand implements ICommand
 					return;
 				}
 			}
-			channel.getManager().setSlowmode(seconds).queue();
+			message.getTextChannel().getManager().setSlowmode(seconds).queue();
 		}
 	}
 
 	@Override
-	public final String getDescription() { return "Sets the slowmode of the channel. Limit: `21600s` - `6h`. Example - `s!slowmode <seconds | off>`"; }
+	public final String getDescription()
+	{
+		final var maxSlowmode = TextChannel.MAX_SLOWMODE;
+		final var hours = maxSlowmode / 3600;
+		return "Sets the slowmode of the channel. Limit: `" + maxSlowmode + "s` - `" + hours + "h`. Example - `s!slowmode <seconds | off>`";
+	}
 	@Override
-	public final boolean isAdmin() { return true; }
+	public final Permission getRequiredPermission() { return Permission.MANAGE_CHANNEL; }
 	@Override
 	public final String getInvoke() { return "slowmode"; }
 	@Override

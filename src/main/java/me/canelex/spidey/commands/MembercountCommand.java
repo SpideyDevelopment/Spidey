@@ -1,7 +1,7 @@
 package me.canelex.spidey.commands;
 
 import me.canelex.jda.api.OnlineStatus;
-import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import me.canelex.jda.api.entities.Message;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.Utils;
@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 public class MembercountCommand implements ICommand
 {
 	@Override
-	public final void action(final GuildMessageReceivedEvent e)
+	public final void action(final String[] args, final Message message)
 	{
-		final var mcv = e.getGuild().getMemberCache();
+		final var mcv = message.getGuild().getMemberCache();
 		final var tonline = mcv.stream().filter(member -> member.getOnlineStatus() == OnlineStatus.ONLINE || member.getOnlineStatus() == OnlineStatus.IDLE || member.getOnlineStatus() == OnlineStatus.DO_NOT_DISTURB).collect(Collectors.toList());
 		final var bonline = tonline.stream().filter(m -> m.getUser().isBot()).count();
 		final var total = mcv.size();
@@ -27,7 +27,7 @@ public class MembercountCommand implements ICommand
 		final var wonline = mcv.stream().filter(Utils::isWeb).count() - bonline;
 		final var donline = mcv.stream().filter(Utils::isDesktop).count();
 
-		final var eb = Utils.createEmbedBuilder(e.getAuthor());
+		final var eb = Utils.createEmbedBuilder(message.getAuthor());
 		eb.setAuthor("MEMBERCOUNT");
 		eb.setColor(Color.WHITE);
 		eb.setTimestamp(Instant.now());
@@ -40,13 +40,11 @@ public class MembercountCommand implements ICommand
 		eb.addField("Desktop users online", "**" + donline + "**", true);
 		eb.addField("Mobile users online", "**" + monline + "**", true);
 		eb.addField("Web users online", "**" + wonline + "**", true);
-		Utils.sendMessage(e.getChannel(), eb.build());
+		Utils.sendMessage(message.getChannel(), eb.build());
 	}
 
 	@Override
 	public final String getDescription() { return "Shows you membercount of guild"; }
-	@Override
-	public final boolean isAdmin() { return false; }
 	@Override
 	public final String getInvoke() { return "membercount"; }
 	@Override

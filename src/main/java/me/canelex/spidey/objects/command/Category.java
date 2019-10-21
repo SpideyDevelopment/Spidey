@@ -15,7 +15,7 @@ public enum Category
         this.friendlyName = friendlyName;
     }
 
-    public String friendlyName()
+    public String getFriendlyName()
     {
         return friendlyName;
     }

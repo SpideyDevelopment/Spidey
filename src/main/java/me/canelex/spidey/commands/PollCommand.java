@@ -1,7 +1,7 @@
 package me.canelex.spidey.commands;
 
 import me.canelex.jda.api.Permission;
-import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import me.canelex.jda.api.entities.Message;
 import me.canelex.spidey.MySQL;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
@@ -15,24 +15,24 @@ import java.awt.*;
 public class PollCommand implements ICommand
 {
 	@Override
-	public final void action(final GuildMessageReceivedEvent e)
+	public final void action(final String[] args, final Message message)
 	{
-		final var guild = e.getGuild();
+		final var guild = message.getGuild();
 		final var log = guild.getTextChannelById(MySQL.getChannel(guild.getIdLong()));
-		final var member = e.getMember();
-		final var author = e.getAuthor();
-		final var channel = e.getChannel();
-		final var message = e.getMessage();
+		final var author = message.getAuthor();
+		final var channel = message.getChannel();
 
-		if (member != null && !Utils.hasPerm(member, Permission.ADMINISTRATOR))
-			Utils.sendMessage(channel, PermissionError.getErrorMessage("ADMINISTRATOR"), false);
+		final var requiredPermission = getRequiredPermission();
+		if (!Utils.hasPerm(message.getMember(), requiredPermission))
+			Utils.sendMessage(channel, PermissionError.getErrorMessage(requiredPermission), false);
 		else
 		{
 			if (log != null)
 			{
 				final var question = message.getContentRaw().substring(7);
 				Utils.deleteMessage(message);
-				channel.sendMessage("Poll: **" + question + "**").queue(m -> {
+				channel.sendMessage("Poll: **" + question + "**").queue(m ->
+				{
 					m.addReaction(Emojis.LIKE).queue();
 					m.addReaction(Emojis.SHRUG).queue();
 					m.addReaction(Emojis.DISLIKE).queue();
@@ -50,7 +50,7 @@ public class PollCommand implements ICommand
 	@Override
 	public final String getDescription() { return "Creates a new poll"; }
 	@Override
-	public final boolean isAdmin() { return true; }
+	public final Permission getRequiredPermission() { return Permission.ADMINISTRATOR; }
 	@Override
 	public final String getInvoke() { return "poll"; }
 	@Override

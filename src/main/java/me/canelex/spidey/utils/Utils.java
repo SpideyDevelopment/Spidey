@@ -42,7 +42,7 @@ public class Utils extends Core
         return toCheck.hasPermission(perm);
     }
 
-    public static void sendMessage(final TextChannel ch, final String toSend, final boolean isSpoiler)
+    public static void sendMessage(final MessageChannel ch, final String toSend, final boolean isSpoiler)
     {
         if (isSpoiler)
             ch.sendMessage("||" + toSend + "||").queue();
@@ -50,7 +50,7 @@ public class Utils extends Core
             ch.sendMessage(toSend).queue();
     }
 
-    public static void sendMessage(final TextChannel ch, final MessageEmbed embed)
+    public static void sendMessage(final MessageChannel ch, final MessageEmbed embed)
     {
         ch.sendMessage(embed).queue();
     }

@@ -2,7 +2,7 @@ package me.canelex.spidey.commands;
 
 import me.canelex.jda.api.Permission;
 import me.canelex.jda.api.entities.Icon;
-import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import me.canelex.jda.api.entities.Message;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.PermissionError;
@@ -22,12 +22,10 @@ public class UploadEmoteCommand implements ICommand
     private static final Logger LOG = LoggerFactory.getLogger(UploadEmoteCommand.class);
 
     @Override
-    public final void action(final GuildMessageReceivedEvent e)
+    public final void action(final String[] args, final Message message)
     {
-        final var channel = e.getChannel();
-        final var guild = e.getGuild();
-        final var message = e.getMessage();
-        final var args = message.getContentRaw().split("\\s+");
+        final var channel = message.getChannel();
+        final var guild = message.getGuild();
 
         if (args.length < 2)
             Utils.returnError("Please provide a URL to retrieve the emote from", message);
@@ -60,8 +58,9 @@ public class UploadEmoteCommand implements ICommand
             Utils.returnError("Unfortunately, we could not create the emote due to an internal error", message);
         }
 
-        if (!Utils.hasPerm(e.getMember(), Permission.MANAGE_EMOTES))
-            Utils.sendMessage(channel, PermissionError.getErrorMessage("MANAGE_EMOTES"), false);
+        final var requiredPermission = getRequiredPermission();
+        if (!Utils.hasPerm(message.getMember(), requiredPermission))
+            Utils.sendMessage(channel, PermissionError.getErrorMessage(requiredPermission), false);
         else if (guild.getMaxEmotes() == guild.getEmoteCache().size())
             Utils.returnError("Guild has the maximum amount of emotes", message);
         else
@@ -81,7 +80,7 @@ public class UploadEmoteCommand implements ICommand
     @Override
     public final String getDescription() { return "Uploads the image from the provided url as an emote if possible"; }
     @Override
-    public final boolean isAdmin() { return true; }
+    public final Permission getRequiredPermission() { return Permission.MANAGE_EMOTES; }
     @Override
     public final String getInvoke() { return "uploademote"; }
     @Override

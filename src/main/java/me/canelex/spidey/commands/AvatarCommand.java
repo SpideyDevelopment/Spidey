@@ -1,6 +1,6 @@
 package me.canelex.spidey.commands;
 
-import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import me.canelex.jda.api.entities.Message;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.Utils;
@@ -11,11 +11,11 @@ import java.awt.*;
 public class AvatarCommand implements ICommand
 {
 	@Override
-	public final void action(final GuildMessageReceivedEvent e)
+	public final void action(final String[] args, final Message message)
 	{
-		final var author = e.getAuthor();
+		final var author = message.getAuthor();
 		final var eb = Utils.createEmbedBuilder(author).setColor(Color.WHITE);
-		final var users = e.getMessage().getMentionedUsers();
+		final var users = message.getMentionedUsers();
 		final var u = users.isEmpty() ? author : users.get(0);
 		final var avatarUrl = u.getAvatarUrl();
 
@@ -23,13 +23,11 @@ public class AvatarCommand implements ICommand
 		eb.setDescription(String.format("[Avatar link](%s)", avatarUrl));
 		eb.setImage(avatarUrl);
 
-		Utils.sendMessage(e.getChannel(), eb.build());
+		Utils.sendMessage(message.getChannel(), eb.build());
 	}
 
 	@Override
 	public final String getDescription() { return "Shows avatar of you or of the mentioned user"; }
-	@Override
-	public final boolean isAdmin() { return false; }
 	@Override
 	public final String getInvoke() { return "avatar"; }
 	@Override

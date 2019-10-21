@@ -1,6 +1,6 @@
 package me.canelex.spidey.commands;
 
-import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import me.canelex.jda.api.entities.Message;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.Utils;
@@ -12,18 +12,15 @@ import java.lang.management.ManagementFactory;
 public class InfoCommand implements ICommand
 {
 	@Override
-	public final void action(final GuildMessageReceivedEvent e)
+	public final void action(final String[] args, final Message message)
 	{
-		final var jda = e.getJDA();
-		final var author = e.getAuthor();
-		final var msgCh = e.getChannel();
-
+		final var author = message.getAuthor();
+		final var msgCh = message.getChannel();
+		final var jda = message.getJDA();
 		final var dev = jda.retrieveApplicationInfo().complete().getOwner();
-
 		final var runtime = Runtime.getRuntime();
 		final var memory = runtime.totalMemory() - runtime.freeMemory();
 		final var duration = ManagementFactory.getRuntimeMXBean().getUptime();
-
 		final var years = duration / 31104000000L;
 		final var months = duration / 2592000000L % 12;
 		final var days = duration / 86400000L % 30;
@@ -48,8 +45,6 @@ public class InfoCommand implements ICommand
 
 	@Override
 	public final String getDescription() { return "Shows you info about me"; }
-	@Override
-	public final boolean isAdmin() { return false; }
 	@Override
 	public final String getInvoke() { return "info"; }
 	@Override

@@ -2,7 +2,6 @@ package me.canelex.spidey.commands;
 
 import me.canelex.jda.api.Permission;
 import me.canelex.jda.api.entities.Message;
-import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.Emojis;
@@ -15,42 +14,40 @@ import java.util.concurrent.TimeUnit;
 public class BanCommand implements ICommand
 {
 	@Override
-	public final void action(final GuildMessageReceivedEvent e)
+	public final void action(final String[] args, final Message message)
 	{
-		final var maxArgs = 4;
-		final var msg = e.getMessage();
-		final var member = e.getMember();
-		final var guild = e.getGuild();
+		final var channel = message.getChannel();
+		final var guild = message.getGuild();
 
-		msg.delete().queueAfter(5, TimeUnit.SECONDS);
-		if (member != null && !Utils.hasPerm(member, Permission.BAN_MEMBERS))
+		message.delete().queueAfter(5, TimeUnit.SECONDS);
+		final var requiredPermission = getRequiredPermission();
+		if (Utils.hasPerm(message.getMember(), requiredPermission))
 		{
-			Utils.sendMessage(e.getChannel(), PermissionError.getErrorMessage("BAN_MEMBERS"), false);
+			Utils.sendMessage(channel, PermissionError.getErrorMessage(requiredPermission), false);
 			return;
 		}
 
-		final var args = msg.getContentRaw().trim().split("\\s+", maxArgs);
 		if (args.length < 3)
 		{
-			Utils.returnError("Wrong syntax", msg);
+			Utils.returnError("Wrong syntax", message);
 			return;
 		}
 		if (!Message.MentionType.USER.getPattern().matcher(args[1]).matches())
 		{
-			Utils.returnError("Wrong syntax (no mention)", msg);
+			Utils.returnError("Wrong syntax (no mention)", message);
 			return;
 		}
 
-		final var members = msg.getMentionedMembers();
+		final var members = message.getMentionedMembers();
 		if (members.isEmpty())
 		{
-			Utils.returnError("User wasn't found", msg);
+			Utils.returnError("User wasn't found", message);
 			return;
 		}
 
 		final var mb = members.get(0);
 		if (!guild.getSelfMember().canInteract(mb))
-			Utils.returnError("Can't ban the user due to permission hierarchy position", msg);
+			Utils.returnError("Can't ban the user due to permission hierarchy position", message);
 
 		var delDays = 0;
 
@@ -60,29 +57,30 @@ public class BanCommand implements ICommand
 		}
 		catch (final NumberFormatException ex)
 		{
-			Utils.returnError("Please enter a valid number", msg);
+			Utils.returnError("Please enter a valid number", message);
 			return;
 		}
 
 		final var reasonBuilder = new StringBuilder("[Banned by Spidey#2370]");
-		final var banMsgBuilder = new StringBuilder(":white_check_mark: Successfully banned user **"
+		final var banmessageBuilder = new StringBuilder(":white_check_mark: Successfully banned user **"
 				+ mb.getUser().getAsTag() + "**.");
 
-		if (args.length == maxArgs)
+		if (args.length == getMaxArgs())
 		{
 			final var reason = args[3];
 			reasonBuilder.append(String.format(" %s", reason));
-			banMsgBuilder.deleteCharAt(banMsgBuilder.length() - 1).append(String.format(" with reason **%s**.", reason));
+			banmessageBuilder.deleteCharAt(banmessageBuilder.length() - 1).append(String.format(" with reason **%s**.", reason));
 		}
 
-		final var reasonMsg = reasonBuilder.toString();
-		final var banMsg = banMsgBuilder.toString();
+		final var reasonMessage = reasonBuilder.toString();
+		final var banMessage = banmessageBuilder.toString();
 
-		msg.addReaction(Emojis.CHECK).queue();
-		guild.ban(mb, delDays, reasonMsg).queue();
+		message.addReaction(Emojis.CHECK).queue();
+		guild.ban(mb, delDays, reasonMessage).queue();
 
-		e.getChannel().sendMessage(banMsg).queue(m -> {
-			msg.delete().queueAfter(5, TimeUnit.SECONDS, null, userGone -> {});
+		channel.sendMessage(banMessage).queue(m ->
+		{
+			message.delete().queueAfter(5, TimeUnit.SECONDS, null, userGone -> {});
 			m.delete().queueAfter(5, TimeUnit.SECONDS, null, botGone -> {});
 		});
 	}
@@ -90,7 +88,9 @@ public class BanCommand implements ICommand
 	@Override
 	public final String getDescription() { return "Bans the given user"; }
 	@Override
-	public final boolean isAdmin() { return true; }
+	public final Permission getRequiredPermission() { return Permission.BAN_MEMBERS; }
+	@Override
+	public final int getMaxArgs() { return 4; }
 	@Override
 	public final String getInvoke() { return "ban"; }
 	@Override

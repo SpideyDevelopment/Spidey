@@ -1,7 +1,7 @@
 package me.canelex.spidey.commands;
 
 import me.canelex.jda.api.Permission;
-import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import me.canelex.jda.api.entities.Message;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.PermissionError;
@@ -17,25 +17,23 @@ public class DeleteCommand implements ICommand
 	private int count;
 
 	@Override
-	public final void action(final GuildMessageReceivedEvent e)
+	public final void action(final String[] args, final Message message)
 	{
-		final var maxArgs = 3;
-		final var msg = e.getMessage();
-		final var channel = e.getChannel();
-		final var member = e.getMember();
-		final var mentionedUsers = msg.getMentionedUsers();
+		final var channel = message.getChannel();
+		final var mentionedUsers = message.getMentionedUsers();
 
-		msg.delete().complete();
-		if (member != null && !Utils.hasPerm(member, Permission.BAN_MEMBERS))
+		message.delete().complete();
+
+		final var requiredPermission = getRequiredPermission();
+		if (!Utils.hasPerm(message.getMember(), requiredPermission))
 		{
-			Utils.sendMessage(channel, PermissionError.getErrorMessage("BAN_MEMBERS"), false);
+			Utils.sendMessage(channel, PermissionError.getErrorMessage(requiredPermission), false);
 			return;
 		}
 
-		final var args = msg.getContentRaw().trim().split("\\s+", maxArgs);
 		if (args.length < 2)
 		{
-			Utils.returnError("Wrong syntax", msg);
+			Utils.returnError("Wrong syntax", message);
 			return;
 		}
 		if (mentionedUsers.isEmpty())
@@ -47,28 +45,25 @@ public class DeleteCommand implements ICommand
 			}
 			catch (final NumberFormatException ignored)
 			{
-				Utils.returnError("Entered value is either negative or not a number", msg);
+				Utils.returnError("Entered value is either negative or not a number", message);
 				return;
 			}
 			if (amount == 0)
 			{
-				Utils.returnError("Please enter a number from 1-100", msg);
+				Utils.returnError("Please enter a number from 1-100", message);
 				return;
 			}
 			if (amount == 100)
 				amount = 99;
 
-			channel.getIterableHistory().cache(false).takeAsync(amount).thenAccept(msgs ->
+			channel.getIterableHistory().cache(false).takeAsync(amount).thenAccept(messages ->
 			{
-				count = msgs.size();
+				count = messages.size();
 				CompletableFuture<Void> future;
 				if (count == 1)
-					future = msgs.get(0).delete().submit();
+					future = messages.get(0).delete().submit();
 				else
-				{
-					final var list = channel.purgeMessages(msgs);
-					future = CompletableFuture.allOf(list.toArray(new CompletableFuture[0]));
-				}
+					future = CompletableFuture.allOf(channel.purgeMessages(messages).toArray(new CompletableFuture[0]));
 				future.thenRunAsync(() -> channel.sendMessage(Utils.generateSuccess(count, null)).queue(m -> m.delete().queueAfter(5, TimeUnit.SECONDS)));
 			});
 		}
@@ -82,29 +77,26 @@ public class DeleteCommand implements ICommand
 			}
 			catch (final NumberFormatException ignored)
 			{
-				Utils.returnError("Entered value is either negative or not a number", msg);
+				Utils.returnError("Entered value is either negative or not a number", message);
 				return;
 			}
 			if (amount == 0)
 			{
-				Utils.returnError("Please enter a number from 1-100", msg);
+				Utils.returnError("Please enter a number from 1-100", message);
 				return;
 			}
 			if (amount == 100)
 				amount = 99;
 
 			final var a = amount;
-			channel.getIterableHistory().cache(false).takeAsync(100).thenAccept(msgs ->
+			channel.getIterableHistory().cache(false).takeAsync(100).thenAccept(messages ->
 			{
-				final var newList = msgs.stream().filter(m -> m.getAuthor().equals(user)).limit(a).collect(Collectors.toList());
+				final var newList = messages.stream().filter(m -> m.getAuthor().equals(user)).limit(a).collect(Collectors.toList());
 				CompletableFuture<Void> future;
 				if (newList.size() == 1)
 					future = newList.get(0).delete().submit();
 				else
-				{
-					final var requests = channel.purgeMessages(newList);
-					future = CompletableFuture.allOf(requests.toArray(new CompletableFuture[0]));
-				}
+					future = CompletableFuture.allOf(channel.purgeMessages(newList).toArray(new CompletableFuture[0]));
 				future.thenRunAsync(() -> channel.sendMessage(Utils.generateSuccess(newList.size(), user)).queue(m -> m.delete().queueAfter(5, TimeUnit.SECONDS)));
 			});
 		}
@@ -113,7 +105,9 @@ public class DeleteCommand implements ICommand
 	@Override
 	public final String getDescription() { return "Deletes messages (by mentioned user)"; }
 	@Override
-	public final boolean isAdmin() { return true; }
+	public final Permission getRequiredPermission() { return Permission.MESSAGE_MANAGE; }
+	@Override
+    public final int getMaxArgs() { return 3; }
 	@Override
 	public final String getInvoke() { return "d"; }
 	@Override

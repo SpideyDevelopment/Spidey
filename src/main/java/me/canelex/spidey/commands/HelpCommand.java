@@ -1,7 +1,7 @@
 package me.canelex.spidey.commands;
 
 import me.canelex.jda.api.Permission;
-import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import me.canelex.jda.api.entities.Message;
 import me.canelex.spidey.Core;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
@@ -17,23 +17,20 @@ import java.util.function.Function;
 public class HelpCommand extends Core implements ICommand
 {
     @Override
-    public final void action(final GuildMessageReceivedEvent e)
+    public final void action(final String[] args, final Message message)
     {
         final HashMap<String, ICommand> commands = new HashMap<>();
-
-        final var args = e.getMessage().getContentRaw().split("\\s+");
-        final var channel = e.getChannel();
-        final var emb = Utils.createEmbedBuilder(e.getAuthor())
+        final var channel = message.getChannel();
+        final var author = message.getAuthor();
+        final var eb = Utils.createEmbedBuilder(author)
                 .setColor(Color.WHITE)
-                .setAuthor("Spidey's Commands", "https://github.com/caneleex/Spidey", e.getJDA().getSelfUser().getAvatarUrl());
+                .setAuthor("Spidey's Commands", "https://github.com/caneleex/Spidey", message.getJDA().getSelfUser().getAvatarUrl());
 
         if (args.length < 2)
         {
             Core.commands.forEach(commands::put);
             commands.remove("help");
-
-            if (!Utils.hasPerm(e.getMember(), Permission.BAN_MEMBERS))
-                commands.keySet().removeIf(com -> Core.commands.get(com).isAdmin());
+            commands.entrySet().removeIf(entry -> !Utils.hasPerm(message.getMember(), entry.getValue().getRequiredPermission()));
 
             final HashMap<Category, List<ICommand>> categories = new HashMap<>();
             commands.values().forEach(cmd ->
@@ -46,27 +43,30 @@ public class HelpCommand extends Core implements ICommand
             categories.forEach((category, commandz) ->
             {
                 sb.append("\n");
-                sb.append(category.friendlyName());
+                sb.append(category.getFriendlyName());
                 sb.append(" ").append("-").append(" ");
                 sb.append(listToString(commandz, ICommand::getInvoke));
-                emb.setDescription("Prefix: **s!**\n" + sb.toString());
+                eb.setDescription("Prefix: **s!**\n" + sb.toString());
             });
-            Utils.sendMessage(channel, emb.build());
+            Utils.sendMessage(channel, eb.build());
         }
         else
         {
-            final var cmd = e.getMessage().getContentRaw().substring(7);
+            final var cmd = message.getContentRaw().substring(7);
             if (!Core.commands.containsKey(cmd))
                 Utils.sendMessage(channel, ":no_entry: **" + cmd + "** isn't a valid command.", false);
             else
             {
                 final var command = Core.commands.get(cmd);
-                final var eb = Utils.createEmbedBuilder(e.getAuthor());
+                final var description = command.getDescription();
+                final var usage = command.getUsage();
+                final var requiredPermission = command.getRequiredPermission();
                 eb.setAuthor("Viewing command info - " + cmd);
                 eb.setColor(Color.WHITE);
-                eb.addField("Description", command.getDescription() == null ? "Unspecified" : command.getDescription(), false);
-                eb.addField("Usage", command.getUsage() == null ? "Unspecified" : "`" + command.getUsage() + "` (<> = required, () = optional)", false);
-                eb.addField("Category",  command.getCategory().friendlyName(), false);
+                eb.addField("Description", description == null ? "Unspecified" : description, false);
+                eb.addField("Usage", usage == null ? "Unspecified" : "`" + usage + "` (<> = required, () = optional)", false);
+                eb.addField("Category",  command.getCategory().getFriendlyName(), false);
+                eb.addField("Required permission", requiredPermission == Permission.UNKNOWN ? "None" : requiredPermission.getName(), false);
                 Utils.sendMessage(channel, eb.build());
             }
         }
@@ -93,6 +93,4 @@ public class HelpCommand extends Core implements ICommand
     public final String getUsage() { return "s!help (command)"; }
     @Override
     public final Category getCategory() { return Category.INFORMATIVE; }
-    @Override
-    public final boolean isAdmin() { return false; }
 }

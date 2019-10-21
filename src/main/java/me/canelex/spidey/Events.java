@@ -10,6 +10,7 @@ import me.canelex.jda.api.events.guild.member.GuildMemberLeaveEvent;
 import me.canelex.jda.api.events.guild.update.GuildUpdateBoostTierEvent;
 import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import me.canelex.jda.api.hooks.ListenerAdapter;
+import me.canelex.spidey.objects.command.CommandHandler;
 import me.canelex.spidey.objects.invites.WrappedInvite;
 import me.canelex.spidey.utils.Utils;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +39,7 @@ public class Events extends ListenerAdapter
 		final var author = e.getAuthor();
 
 		if (content.startsWith("s!") && !author.isBot())
-			Core.handleCommand(Core.parser.parse(content, e));
+			CommandHandler.handle(content, e);
 
 		final var channel = guild.getTextChannelById(MySQL.getChannel(guild.getIdLong()));
 		if (message.getType() == MessageType.GUILD_MEMBER_BOOST && channel != null)

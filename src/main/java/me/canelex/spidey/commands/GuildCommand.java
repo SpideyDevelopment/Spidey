@@ -1,7 +1,7 @@
 package me.canelex.spidey.commands;
 
 import me.canelex.jda.api.entities.Emote;
-import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import me.canelex.jda.api.entities.Message;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.Utils;
@@ -10,22 +10,18 @@ import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 public class GuildCommand implements ICommand
 {
-	private final Locale locale = new Locale("en", "EN");
-	private final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/London"));
-	private final SimpleDateFormat date = new SimpleDateFormat("EE, d.LLL Y", locale);
-	private final SimpleDateFormat time = new SimpleDateFormat("HH:mm:ss", locale);
+	private final Calendar cal = Calendar.getInstance();
+	private final SimpleDateFormat date = new SimpleDateFormat("EE, d.LLL Y | HH:mm:ss", new Locale("en", "EN"));
 
 	@Override
-	public final void action(final GuildMessageReceivedEvent e)
+	public final void action(final String[] args, final Message message)
 	{
-		final var guild = e.getGuild();
-		final var eb = Utils.createEmbedBuilder(e.getAuthor());
+		final var eb = Utils.createEmbedBuilder(message.getAuthor());
+		final var guild = message.getGuild();
 		eb.setColor(Color.ORANGE);
 		eb.setThumbnail(guild.getIconUrl());
 
@@ -47,30 +43,31 @@ public class GuildCommand implements ICommand
 		eb.addField("Region", guild.getRegionRaw(), true);
 
 		cal.setTimeInMillis(guild.getTimeCreated().toInstant().toEpochMilli());
-		final var creatdate = date.format(cal.getTime());
-		final var creattime = time.format(cal.getTime());
-		eb.addField("Creation", String.format( "%s | %s", creatdate, creattime), true);
+		final var creation = date.format(cal.getTime());
+		eb.addField("Creation", creation, true);
 
+		final var vanityUrl = guild.getVanityUrl();
 		if (!Utils.canSetVanityUrl(guild)) //could use ternary here too, but i don't use it because of readability
 			eb.addField("Custom invite/Vanity url", "Guild isn't eligible to set vanity url", true);
         else
-			eb.addField("Custom invite/Vanity url", guild.getVanityUrl() == null ? "Guild has no vanity url set" : guild.getVanityUrl(), true);
+			eb.addField("Custom invite/Vanity url", vanityUrl == null ? "Guild has no vanity url set" : vanityUrl, true);
 
-		final var roles = guild.getRoleCache().stream().filter(role -> guild.getPublicRole() != role).collect(Collectors.toList());
-        eb.addField("Roles", "" + roles.size(), true);
+        eb.addField("Roles", "" + (guild.getRoleCache().size() - 1), true);
 
 		final var st = new StringBuilder();
 
 		var ec = 0;
-		final var an = guild.getEmotes().stream().filter(Emote::isAnimated).count();
+		final var emotes = guild.getEmoteCache();
+		final var an = emotes.stream().filter(Emote::isAnimated).count();
 
-		for (final var emote : guild.getEmotes())
+		for (final var emote : emotes)
 		{
 			ec++;
-			if (ec == guild.getEmoteCache().size())
-				st.append(emote.getAsMention());
+			final var mention = emote.getAsMention();
+			if (ec == emotes.size())
+				st.append(mention);
 			else
-				st.append(emote.getAsMention()).append(" ");
+				st.append(mention).append(" ");
 		}
 
 		if (ec > 0)
@@ -81,13 +78,11 @@ public class GuildCommand implements ICommand
 				eb.addField(String.format("Emotes (**%s** | **%s** animated)", ec, an), (st.toString().length() == 0) ? "None" : st.toString(), false);
 		}
 
-		Utils.sendMessage(e.getChannel(), eb.build());
+		Utils.sendMessage(message.getChannel(), eb.build());
 	}
 
 	@Override
 	public final String getDescription() { return "Shows you info about this guild"; }
-	@Override
-	public final boolean isAdmin() { return false; }
 	@Override
 	public final String getInvoke() { return "guild"; }
 	@Override

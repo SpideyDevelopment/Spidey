@@ -4,7 +4,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.YouTubeRequestInitializer;
-import me.canelex.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import me.canelex.jda.api.entities.Message;
 import me.canelex.spidey.Secrets;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
@@ -16,23 +16,21 @@ import org.slf4j.LoggerFactory;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.TimeZone;
 
 @SuppressWarnings("unused")
 public class YouTubeChannelCommand implements ICommand
 {
 
-	private final Locale locale = new Locale("en", "EN");
-	private final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/London"));
-	private final SimpleDateFormat date = new SimpleDateFormat("EEEE, d.LLLL Y", locale);
-	private final SimpleDateFormat time = new SimpleDateFormat("HH:mm:ss", locale);
+	private final Calendar cal = Calendar.getInstance();
+	private final SimpleDateFormat date = new SimpleDateFormat("EE, d.LLL Y | HH:mm:ss", new Locale("en", "EN"));
 	private static final Logger LOG = LoggerFactory.getLogger(YouTubeChannelCommand.class);
 
 	@Override
-	public final void action(final GuildMessageReceivedEvent e)
+	public final void action(final String[] args, final Message message)
 	{
-		final var channel = e.getMessage().getContentRaw().substring(12);
-		final var msg = e.getChannel().sendMessage("Fetching data..").complete(); //TODO temporary solution
+		final var channelname = message.getContentRaw().substring(12);
+		final var channel = message.getChannel();
+		final var msg = channel.sendMessage("Fetching data..").complete(); //TODO temporary solution
 
 		try
 		{
@@ -44,7 +42,7 @@ public class YouTubeChannelCommand implements ICommand
 					.setYouTubeRequestInitializer(new YouTubeRequestInitializer(Secrets.YOUTUBEAPIKEY))
 					.build();
 
-			final var search = youtube.search().list("snippet").setQ(channel).setType("channel");
+			final var search = youtube.search().list("snippet").setQ(channelname).setType("channel");
 			final var searchResponse = search.execute();
 
 			if (!searchResponse.getItems().isEmpty()) {
@@ -54,12 +52,9 @@ public class YouTubeChannelCommand implements ICommand
 				final var c = channels.execute().getItems().get(0);
 
 				cal.setTimeInMillis(c.getSnippet().getPublishedAt().getValue());
+				final var creation = date.format(cal.getTime());
 
-				final var caltime = cal.getTime();
-				final var creatdate = date.format(caltime);
-				final var creattime = time.format(caltime);
-
-				final var eb = Utils.createEmbedBuilder(e.getAuthor());
+				final var eb = Utils.createEmbedBuilder(message.getAuthor());
 				final var sb = new SocialBlade().getYouTube(channelId);
 				eb.setAuthor(c.getSnippet().getTitle(), "https://youtube.com/channel/" + channelId, "https://canelex.ymastersk.net/up/yt.png");
 				eb.setColor(14765121);
@@ -67,7 +62,7 @@ public class YouTubeChannelCommand implements ICommand
 				eb.addField("Subscribers", "**" + sb.getSubs() + "**", false);
 				eb.addField("Views", "**" + sb.getViews() + "**", false);
 				eb.addField("Videos", "**" + sb.getVideos() + "**", false);
-				eb.addField("Created", String.format("**%s** | **%s** UTC", creatdate, creattime), false);
+				eb.addField("Created", "**" + creation + "**", false);
 				eb.addField("Partner", (sb.isPartner() ? "**Yes**" : "**No**"), false);
 				eb.addField("Verified", (sb.isVerified() ? "**Yes**" : "**No**"), false);
 				eb.addField("Country", "**" + sb.getCountry() + "**", false);
@@ -82,7 +77,7 @@ public class YouTubeChannelCommand implements ICommand
 				msg.editMessage(eb.build()).override(true).queue();
 			}
 			else
-				Utils.sendMessage(e.getChannel(), ":no_entry: No results found.", false);
+				Utils.sendMessage(channel, ":no_entry: No results found.", false);
 		}
 		catch (final Exception ex)
 		{
@@ -92,8 +87,6 @@ public class YouTubeChannelCommand implements ICommand
 
 	@Override
 	public final String getDescription() { return "Shows info about entered YouTube channel"; }
-	@Override
-	public final boolean isAdmin() { return false; }
 	@Override
 	public final String getInvoke() { return "ytchannel"; }
 	@Override
