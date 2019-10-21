@@ -30,6 +30,13 @@ public class UploadEmoteCommand implements ICommand
         if (args.length < 2)
             Utils.returnError("Please provide a URL to retrieve the emote from", message);
 
+        final var extension = args[1].substring(args[1].lastIndexOf('.') + 1);
+        if (Icon.IconType.fromExtension(extension) == Icon.IconType.UNKNOWN)
+        {
+            Utils.returnError("Please provide a URL containing an image", message);
+            return;
+        }
+
         final var image = new ByteArrayOutputStream();
         try
         {
@@ -51,11 +58,13 @@ public class UploadEmoteCommand implements ICommand
         {
             LOG.error("There was an error while parsing the URL. URL: {}", args[1], ex);
             Utils.returnError("Please provide a valid URL to retrieve the emote from", message);
+            return;
         }
         catch (final IOException ex)
         {
             LOG.error("There was an error!", ex);
             Utils.returnError("Unfortunately, we could not create the emote due to an internal error", message);
+            return;
         }
 
         final var requiredPermission = getRequiredPermission();
@@ -70,10 +79,18 @@ public class UploadEmoteCommand implements ICommand
                 name = args[2];
             else
                 name = args[1].substring(args[1].lastIndexOf('/') + 1, args[1].lastIndexOf('.'));
-            if (!Utils.hasPerm(guild.getSelfMember(), Permission.MANAGE_EMOTES))
+            if (!(name.length() > 1 && name.length() < 33))
+            {
+                Utils.returnError("The name of the emote has to be between 2 and 32 in length", message);
+                return;
+            } //TODO name regex handling
+            if (!Utils.hasPerm(guild.getSelfMember(), requiredPermission))
                 Utils.returnError("Spidey does not have the permission to upload emotes", message);
             else
-                guild.createEmote(name, Icon.from(image.toByteArray())).queue(emote -> Utils.sendMessage(channel, "Emote " + emote.getAsMention() + " has been successfully uploaded!", false));
+                guild.createEmote(name, Icon.from(image.toByteArray())).queue(emote ->
+                    guild.retrieveEmotes().queue(emotes -> Utils.sendMessage(channel, "Emote " + emote.getAsMention() + " has been successfully uploaded! Emote slots left: **" + (guild.getMaxEmotes() - emotes.size()) + "**", false))
+                , failure ->
+                    Utils.returnError("Unfortunately, we could not create the emote due to an internal error: **" + failure.getMessage() + "**. Please report this message to the Developer.", message));
         }
     }
 
