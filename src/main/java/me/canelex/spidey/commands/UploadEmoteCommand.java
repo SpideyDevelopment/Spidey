@@ -30,7 +30,8 @@ public class UploadEmoteCommand implements ICommand
         if (args.length < 2)
             Utils.returnError("Please provide a URL to retrieve the emote from", message);
 
-        final var extension = args[1].substring(args[1].lastIndexOf('.') + 1);
+        final var index = args[1].lastIndexOf('.');
+        final var extension = args[1].substring(index + 1);
         if (Icon.IconType.fromExtension(extension) == Icon.IconType.UNKNOWN)
         {
             Utils.returnError("Please provide a URL containing an image", message);
@@ -78,12 +79,17 @@ public class UploadEmoteCommand implements ICommand
             if (args.length == 3)
                 name = args[2];
             else
-                name = args[1].substring(args[1].lastIndexOf('/') + 1, args[1].lastIndexOf('.'));
+                name = args[1].substring(args[1].lastIndexOf('/') + 1, index);
             if (!(name.length() > 1 && name.length() < 33))
             {
                 Utils.returnError("The name of the emote has to be between 2 and 32 in length", message);
                 return;
-            } //TODO name regex handling
+            }
+            else if (!name.matches("[a-zA-Z0-9-_]+"))
+            {
+                Utils.returnError("The name of the emote has to be in a valid format", message);
+                return;
+            }
             if (!Utils.hasPerm(guild.getSelfMember(), requiredPermission))
                 Utils.returnError("Spidey does not have the permission to upload emotes", message);
             else
