@@ -4,6 +4,7 @@ import me.canelex.jda.api.EmbedBuilder;
 import me.canelex.jda.api.audit.ActionType;
 import me.canelex.jda.api.entities.MessageType;
 import me.canelex.jda.api.events.ShutdownEvent;
+import me.canelex.jda.api.events.channel.text.TextChannelDeleteEvent;
 import me.canelex.jda.api.events.guild.*;
 import me.canelex.jda.api.events.guild.member.GuildMemberJoinEvent;
 import me.canelex.jda.api.events.guild.member.GuildMemberLeaveEvent;
@@ -202,6 +203,14 @@ public class Events extends ListenerAdapter
 		invitesMap.entrySet().removeIf(entry -> entry.getValue().getGuildId() == id);
 		MySQL.removeChannel(id);
 		Utils.stopInvitesCheck(guild);
+	}
+
+	@Override
+	public final void onTextChannelDelete(final TextChannelDeleteEvent e)
+	{
+		final var id = e.getGuild().getIdLong();
+		if (e.getChannel().getIdLong() == MySQL.getChannel(id))
+			MySQL.removeChannel(id);
 	}
 
 	@Override
