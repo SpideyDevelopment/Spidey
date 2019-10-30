@@ -20,7 +20,6 @@ import java.util.Locale;
 @SuppressWarnings("unused")
 public class YouTubeChannelCommand implements ICommand
 {
-
 	private final Calendar cal = Calendar.getInstance();
 	private final SimpleDateFormat date = new SimpleDateFormat("EE, d.LLL Y | HH:mm:ss", new Locale("en", "EN"));
 	private static final Logger LOG = LoggerFactory.getLogger(YouTubeChannelCommand.class);
@@ -28,7 +27,6 @@ public class YouTubeChannelCommand implements ICommand
 	@Override
 	public final void action(final String[] args, final Message message)
 	{
-		final var channelname = message.getContentRaw().substring(12);
 		final var channel = message.getChannel();
 		final var msg = channel.sendMessage("Fetching data..").complete(); //TODO temporary solution
 
@@ -38,14 +36,15 @@ public class YouTubeChannelCommand implements ICommand
 					new NetHttpTransport(),
 					new JacksonFactory(),
 					request -> {})
-					.setApplicationName("youtube-cmdline-search-sample")
+					.setApplicationName("youtube-4HEad")
 					.setYouTubeRequestInitializer(new YouTubeRequestInitializer(Secrets.YOUTUBEAPIKEY))
 					.build();
 
-			final var search = youtube.search().list("snippet").setQ(channelname).setType("channel");
+			final var search = youtube.search().list("snippet").setQ(message.getContentRaw().substring(12)).setType("channel");
 			final var searchResponse = search.execute();
 
-			if (!searchResponse.getItems().isEmpty()) {
+			if (!searchResponse.getItems().isEmpty())
+			{
 				final var channelId = searchResponse.getItems().get(0).getSnippet().getChannelId();
 				final var channels = youtube.channels().list("snippet, statistics");
 				channels.setId(channelId);

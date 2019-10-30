@@ -36,11 +36,10 @@ public class Events extends ListenerAdapter
 	{
 		final var guild = e.getGuild();
 		final var message = e.getMessage();
-		final var content = message.getContentRaw();
 		final var author = e.getAuthor();
 
-		if (content.startsWith("s!") && !author.isBot())
-			CommandHandler.handle(content, e);
+		if (message.getContentRaw().startsWith("s!") && !author.isBot())
+			CommandHandler.handle(message);
 
 		final var channel = guild.getTextChannelById(MySQL.getChannel(guild.getIdLong()));
 		if (message.getType() == MessageType.GUILD_MEMBER_BOOST && channel != null)
