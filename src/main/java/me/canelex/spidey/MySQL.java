@@ -15,7 +15,6 @@ public class MySQL
 		super();
 	}
 
-	private static Connection c;
 	private static final Logger LOG = LoggerFactory.getLogger(MySQL.class);
 	private static final String GUILDS_STATEMENT = "SELECT *, COUNT(*) AS total FROM `guilds` WHERE `guild_id`=? LIMIT 1;";
 
@@ -34,18 +33,17 @@ public class MySQL
 
 	public static long getChannel(final long guildId)
 	{
-		c = getConnection();
 		if (!hasChannel(guildId))
 			return 0;
 
-		try (final var ps = c.prepareStatement(GUILDS_STATEMENT))
+		try (final var c = getConnection(); final var ps = c.prepareStatement(GUILDS_STATEMENT))
 		{
-            ps.setLong(1, guildId);
-            try (final var rs = ps.executeQuery())
+			ps.setLong(1, guildId);
+			try (final var rs = ps.executeQuery())
 			{
-                rs.next();
-                return rs.getLong("channel_id");
-            }
+				rs.next();
+				return rs.getLong("channel_id");
+			}
 		}
 		catch (final SQLException e)
 		{
@@ -56,13 +54,11 @@ public class MySQL
 
 	public static void upsertChannel(final long guildId, final long channelId)
 	{
-		c = getConnection();
-		try (final var ps = c.prepareStatement("REPLACE INTO `guilds` (`guild_id`, `channel_id`) VALUES (?, ?);"))
+		try (final var c = getConnection(); final var ps = c.prepareStatement("REPLACE INTO `guilds` (`guild_id`, `channel_id`) VALUES (?, ?);"))
 		{
 			ps.setLong(1, guildId);
 			ps.setLong(2, channelId);
 			ps.executeUpdate();
-			c.close();
 		}
 		catch (final SQLException e)
 		{
@@ -72,15 +68,13 @@ public class MySQL
 
 	public static void removeChannel(final long guildId)
 	{
-		c = getConnection();
 		if (!hasChannel(guildId))
 			return;
 
-		try (final var ps = c.prepareStatement("DELETE FROM `guilds` WHERE `guild_id`=?;"))
+		try (final var c = getConnection(); final var ps = c.prepareStatement("DELETE FROM `guilds` WHERE `guild_id`=?;"))
 		{
 			ps.setLong(1, guildId);
 			ps.executeUpdate();
-			c.close();
 		}
 		catch (final SQLException e)
 		{
@@ -90,8 +84,7 @@ public class MySQL
 
 	public static boolean hasChannel(final long guildId)
 	{
-		c = getConnection();
-		try (final var ps = c.prepareStatement(GUILDS_STATEMENT))
+		try (final var c = getConnection(); final var ps = c.prepareStatement(GUILDS_STATEMENT))
 		{
 			ps.setLong(1, guildId);
 			try (final var rs = ps.executeQuery())

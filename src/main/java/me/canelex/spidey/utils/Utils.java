@@ -152,15 +152,17 @@ public class Utils extends Core
             con.setRequestMethod("GET");
             con.setRequestProperty("User-Agent", "me.canelex.spidey");
 
-            final var in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             var inputLine = "";
             final var response = new StringBuilder();
 
-            while ((inputLine = in.readLine()) != null)
+            try (final var in = new BufferedReader(new InputStreamReader(con.getInputStream())))
             {
-                response.append(inputLine);
+                while ((inputLine = in.readLine()) != null)
+                {
+                    response.append(inputLine);
+                }
             }
-            in.close();
+            con.disconnect();
             content = response.toString();
         }
         catch (final IOException e)

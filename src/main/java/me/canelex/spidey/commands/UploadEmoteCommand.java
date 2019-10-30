@@ -54,6 +54,7 @@ public class UploadEmoteCommand implements ICommand
                     image.write(chunk, 0, bytesRead);
                 }
             }
+            con.disconnect();
         }
         catch (final MalformedURLException ex)
         {
