@@ -16,21 +16,21 @@ public class Reddit
 
     public final Reddit getSubReddit(final String name)
     {
-        return exists(name) ? null : fromJson(Utils.getJson(
+        return !exists(name) ? null : fromJson(Utils.getJson(
                 "https://reddit.com/r/" + name + "/about.json"));
     }
 
     private boolean exists(final String name)
     {
-        return Utils.getJson("https://reddit.com/subreddits/search.json?q=" + name).getObject("data").getInt("dist") == 0;
-    }
+        return 1 == Utils.getJson("https://reddit.com/subreddits/search.json?limit=1&q=" + name).getObject("data").getInt("dist");
+    } //TODO login to access private subreddits
 
     private Reddit fromJson(final DataObject o)
     {
         final var data = o.getObject("data");
         this.subs = data.getInt("subscribers");
         this.name = data.getString("display_name");
-        this.desc = data.getString("public_description");
+        this.desc = Utils.cleanString(data.getString("public_description"));
         this.title = data.getString("title");
         this.active = data.getInt("accounts_active");
         this.nsfw = data.getBoolean("over18");

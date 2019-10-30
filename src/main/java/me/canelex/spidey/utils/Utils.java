@@ -11,6 +11,7 @@ import me.canelex.spidey.Core;
 import me.canelex.spidey.Events;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.objects.invites.WrappedInvite;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -199,5 +200,14 @@ public class Utils extends Core
                 invites.forEach(invite -> invitesMap.computeIfAbsent(invite.getCode(), ignored -> new WrappedInvite(invite))); // an invite was created so we store it
                 invitesMap.forEach((key, value) -> Invite.resolve(jda, key).queue(null, failure -> invitesMap.remove(key))); // an invite was deleted so we remove it from the map
             }), 60L, 30L, TimeUnit.SECONDS));
+    }
+
+    public static String cleanString(final String original)
+    {
+        return StringEscapeUtils.unescapeJava(
+            StringEscapeUtils.unescapeHtml4(
+                original
+                    .replaceAll("<.*?>", "")
+                    .replaceAll("\"", "")));
     }
 }

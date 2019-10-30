@@ -4,8 +4,8 @@ import me.canelex.jda.api.entities.Invite;
 
 public class WrappedInvite
 {
-    long guildId;
-    int uses;
+    private long guildId;
+    private int uses;
 
     public WrappedInvite(final Invite invite)
     {

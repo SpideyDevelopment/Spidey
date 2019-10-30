@@ -28,7 +28,6 @@ public class YouTubeChannelCommand implements ICommand
 	public final void action(final String[] args, final Message message)
 	{
 		final var channel = message.getChannel();
-		final var msg = channel.sendMessage("Fetching data..").complete(); //TODO temporary solution
 
 		try
 		{
@@ -45,6 +44,7 @@ public class YouTubeChannelCommand implements ICommand
 
 			if (!searchResponse.getItems().isEmpty())
 			{
+				final var msg = channel.sendMessage("Fetching data..").complete(); //TODO temporary solution
 				final var channelId = searchResponse.getItems().get(0).getSnippet().getChannelId();
 				final var channels = youtube.channels().list("snippet, statistics");
 				channels.setId(channelId);
