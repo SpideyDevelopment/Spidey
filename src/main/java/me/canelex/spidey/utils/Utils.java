@@ -16,11 +16,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -209,5 +213,12 @@ public class Utils extends Core
                 original
                     .replaceAll("<.*?>", "")
                     .replaceAll("\"", "")));
+    }
+
+    public static String getBuildDate()
+    {
+        final var cal = Calendar.getInstance();
+        cal.setTimeInMillis(new File("Spidey.jar").lastModified());
+        return new SimpleDateFormat("EE, d.LLL Y | HH:mm:ss", new Locale("en", "EN")).format(cal.getTime());
     }
 }
