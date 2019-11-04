@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class Utils extends Core
 {
@@ -196,13 +197,22 @@ public class Utils extends Core
 
     public static void startInvitesCheck(final Guild guild)
     {
-        SCHEDULERS.put(guild.getIdLong(), EXECUTOR.scheduleAtFixedRate(() ->
+        final var id = guild.getIdLong();
+        SCHEDULERS.put(id, EXECUTOR.scheduleAtFixedRate(() ->
             guild.retrieveInvites().queue(invites ->
             {
                 final var invitesMap = Events.getInvites();
-                final var jda = guild.getJDA();
-                invites.forEach(invite -> invitesMap.computeIfAbsent(invite.getCode(), ignored -> new WrappedInvite(invite))); // an invite was created so we store it
-                invitesMap.forEach((key, value) -> Invite.resolve(jda, key).queue(null, failure -> invitesMap.remove(key))); // an invite was deleted so we remove it from the map
+                final var guildCodes = invites.stream().map(Invite::getCode).collect(Collectors.toList());
+                invites.forEach(invite -> invitesMap.computeIfAbsent(invite.getCode(), ignored -> new WrappedInvite(invite))); // an invite was created so we cache it
+                invitesMap.entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue().getGuildId() == id)
+                    .map(Map.Entry::getKey)
+                    .forEach(code ->
+                    {
+                        if (!guildCodes.contains(code))
+                            invitesMap.remove(code); // an invite was deleted so we uncache it
+                    });
             }), 60L, 30L, TimeUnit.SECONDS));
     }
 
