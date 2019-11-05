@@ -37,6 +37,7 @@ public class Utils extends Core
     private static final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Invites-Check").setUncaughtExceptionHandler((t, e) -> LOG.error("There was an exception in thread {}: {}", t.getName(), e.getMessage())).build();
     private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(threadFactory);
     private static final Map<Long, ScheduledFuture<?>> SCHEDULERS = new HashMap<>();
+    private static final char[] SUFFIXES = {'k', 'M', 'B'};
 
     private Utils()
     {
@@ -230,5 +231,28 @@ public class Utils extends Core
         final var cal = Calendar.getInstance();
         cal.setTimeInMillis(new File("Spidey.jar").lastModified());
         return new SimpleDateFormat("EE, d.LLL Y | HH:mm:ss", new Locale("en", "EN")).format(cal.getTime());
+    }
+
+    public static String getCompactNumber(final long number)
+    {
+        final var sn = String.valueOf(number);
+        final var length = sn.length();
+        if (number < 1000)
+            return sn;
+        final int magnitude = (length - 1) / 3;
+        int digits = (length - 1) % 3 + 1;
+
+        char[] value = new char[4];
+        for (int i = 0; i < digits; i++)
+        {
+            value[i] = sn.charAt(i);
+        }
+        if (digits == 1 && sn.charAt(1) != '0')
+        {
+            value[digits++] = '.';
+            value[digits++] = sn.charAt(1);
+        }
+        value[digits++] = SUFFIXES[magnitude - 1];
+        return new String(value, 0, digits);
     }
 }

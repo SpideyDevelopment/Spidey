@@ -13,6 +13,7 @@ import me.canelex.spidey.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -23,6 +24,7 @@ public class YouTubeChannelCommand implements ICommand
 	private final Calendar cal = Calendar.getInstance();
 	private final SimpleDateFormat date = new SimpleDateFormat("EE, d.LLL Y | HH:mm:ss", new Locale("en", "EN"));
 	private static final Logger LOG = LoggerFactory.getLogger(YouTubeChannelCommand.class);
+	private static final DecimalFormat FORMATTER = new DecimalFormat("#,###");
 
 	@Override
 	public final void action(final String[] args, final Message message)
@@ -55,11 +57,13 @@ public class YouTubeChannelCommand implements ICommand
 
 				final var eb = Utils.createEmbedBuilder(message.getAuthor());
 				final var sb = new SocialBlade().getYouTube(channelId);
+				final var subs = sb.getSubs();
+				final var views = sb.getViews();
 				eb.setAuthor(c.getSnippet().getTitle(), "https://youtube.com/channel/" + channelId, "https://canelex.ymastersk.net/up/yt.png");
 				eb.setColor(14765121);
 				eb.setThumbnail(sb.getAvatar());
-				eb.addField("Subscribers", "**" + sb.getSubs() + "**", false);
-				eb.addField("Views", "**" + sb.getViews() + "**", false);
+				eb.addField("Subscribers", (subs >= 1000 ? "**" + Utils.getCompactNumber(subs) + "** (**" + FORMATTER.format(subs) + "**)" : "**" + subs + "**"), false);
+				eb.addField("Views", (views >= 1000 ? "**" + Utils.getCompactNumber(views) + "** (**" + FORMATTER.format(views) + "**)" : "**" + views + "**"), false);
 				eb.addField("Videos", "**" + sb.getVideos() + "**", false);
 				eb.addField("Created", "**" + creation + "**", false);
 				eb.addField("Partner", (sb.isPartner() ? "**Yes**" : "**No**"), false);
