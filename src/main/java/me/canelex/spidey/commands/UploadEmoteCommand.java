@@ -95,7 +95,11 @@ public class UploadEmoteCommand implements ICommand
                 Utils.returnError("Spidey does not have the permission to upload emotes", message);
             else
                 guild.createEmote(name, Icon.from(image.toByteArray())).queue(emote ->
-                    guild.retrieveEmotes().queue(emotes -> Utils.sendMessage(channel, "Emote " + emote.getAsMention() + " has been successfully uploaded! Emote slots left: **" + (guild.getMaxEmotes() - emotes.size()) + "**", false))
+                    guild.retrieveEmotes().queue(emotes ->
+                    {
+                        final var amount = guild.getMaxEmotes() - emotes.size();
+                        Utils.sendMessage(channel, "Emote " + emote.getAsMention() + " has been successfully uploaded! Emote slots left: **" + (amount == 0 ? "None" : amount) + "**", false);
+                    })
                 , failure ->
                     Utils.returnError("Unfortunately, we could not create the emote due to an internal error: **" + failure.getMessage() + "**. Please report this message to the Developer.", message));
         }
