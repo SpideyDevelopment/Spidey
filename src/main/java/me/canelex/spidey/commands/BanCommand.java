@@ -21,7 +21,7 @@ public class BanCommand implements ICommand
 
 		message.delete().queueAfter(5, TimeUnit.SECONDS);
 		final var requiredPermission = getRequiredPermission();
-		if (Utils.hasPerm(message.getMember(), requiredPermission))
+		if (!Utils.hasPerm(message.getMember(), requiredPermission))
 		{
 			Utils.sendMessage(channel, PermissionError.getErrorMessage(requiredPermission), false);
 			return;
