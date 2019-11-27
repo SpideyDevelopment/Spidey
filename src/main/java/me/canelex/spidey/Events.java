@@ -135,8 +135,13 @@ public class Events extends ListenerAdapter
 	{
 		final var user = e.getUser();
 		final var guild = e.getGuild();
+		final var id = guild.getIdLong();
+		final var channel = guild.getTextChannelById(MySQL.getChannel(id));
+		final var role = guild.getRoleById(MySQL.getRole(id));
+		final var userId = user.getId();
 
-		final var channel = guild.getTextChannelById(MySQL.getChannel(guild.getIdLong()));
+		if (role != null)
+			guild.addRoleToMember(userId, role).queue();
 		if (channel != null)
 		{
 			final var eb = new EmbedBuilder();
@@ -145,7 +150,7 @@ public class Events extends ListenerAdapter
 			eb.setColor(Color.GREEN);
 			eb.setTimestamp(Instant.now());
 			eb.addField("User", "**" + user.getAsTag() + "**", true);
-			eb.addField("ID", "**" + user.getId() + "**", true);
+			eb.addField("ID", "**" + userId + "**", true);
 
 			guild.retrieveInvites().queue(invites ->
 			{

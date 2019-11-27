@@ -30,12 +30,12 @@ public class LogCommand implements ICommand
 			if (MySQL.getChannel(idLong) == channel.getIdLong())
 			{
 				final var defaultChannel = guild.getDefaultChannel();
-				MySQL.upsertChannel(idLong, defaultChannel.getIdLong());
+				MySQL.setChannel(idLong, defaultChannel.getIdLong());
 				channel.sendMessage(":white_check_mark: Log channel has been set to " + defaultChannel.getAsMention() + ". Type this command again in the channel you want to set as the log channel.").queue(m -> m.delete().queueAfter(5,  TimeUnit.SECONDS));
 			}
 			else
 			{
-				MySQL.upsertChannel(idLong, channel.getIdLong());
+				MySQL.setChannel(idLong, channel.getIdLong());
 				channel.sendMessage(":white_check_mark: Log channel has been set to <#" + channel.getIdLong() + ">. Type this command again to set the log channel to default guild channel.").queue(m -> m.delete().queueAfter(5,  TimeUnit.SECONDS));
 			}
 		}

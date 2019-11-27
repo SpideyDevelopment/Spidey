@@ -16,7 +16,6 @@ public class MySQL
 	}
 
 	private static final Logger LOG = LoggerFactory.getLogger(MySQL.class);
-	private static final String GUILDS_STATEMENT = "SELECT *, COUNT(*) AS total FROM `guilds` WHERE `guild_id`=? LIMIT 1;";
 
 	private static Connection getConnection()
 	{
@@ -31,60 +30,62 @@ public class MySQL
 		return null;
 	}
 
-	public static long getChannel(final long guildId)
+	private static long getProperty(final long guildId, final String property)
 	{
-		if (!hasChannel(guildId))
+		if (!hasProperty(guildId, property))
 			return 0;
 
-		try (final var c = getConnection(); final var ps = c.prepareStatement(GUILDS_STATEMENT))
+		try (final var c = getConnection(); final var ps = c.prepareStatement("SELECT `" + property + "` FROM `guilds` WHERE `guild_id`=?;"))
 		{
 			ps.setLong(1, guildId);
 			try (final var rs = ps.executeQuery())
 			{
 				rs.next();
-				return rs.getLong("channel_id");
+				return rs.getLong(property);
 			}
 		}
 		catch (final SQLException e)
 		{
-			LOG.error("There was an error while requesting the log channel id for guild {}!", guildId, e);
+			LOG.error("There was an error while requesting the {} property for guild {}!", property, guildId, e);
 		}
 		return 0;
 	}
 
-	public static void upsertChannel(final long guildId, final long channelId)
+	private static void setProperty(final long guildId, final long id, final String property)
 	{
-		try (final var c = getConnection(); final var ps = c.prepareStatement("REPLACE INTO `guilds` (`guild_id`, `channel_id`) VALUES (?, ?);"))
+		try (final var c = getConnection(); final var ps = c.prepareStatement("REPLACE INTO `guilds` (`guild_id`, `channel_id`, `role_id`) VALUES (?, ?, ?);"))
 		{
 			ps.setLong(1, guildId);
-			ps.setLong(2, channelId);
+			ps.setLong(2, (property.equals("channel_id") ? id : getChannel(guildId)));
+			ps.setLong(3, (property.equals("role_id") ? id : getRole(guildId)));
 			ps.executeUpdate();
 		}
 		catch (final SQLException e)
 		{
-			LOG.error("There was an error while upserting the log channel id for guild {}!", guildId, e);
+			LOG.error("There was an error while upserting the {} property for guild {}!", property, guildId, e);
 		}
 	}
 
-	public static void removeChannel(final long guildId)
+	private static void removeProperty(final long guildId, final String property)
 	{
-		if (!hasChannel(guildId))
+		if (!hasProperty(guildId, property))
 			return;
 
-		try (final var c = getConnection(); final var ps = c.prepareStatement("DELETE FROM `guilds` WHERE `guild_id`=?;"))
+		try (final var c = getConnection(); final var ps = c.prepareStatement("UPDATE `guilds` SET `" + property + "`=0 WHERE `guild_id`=?;"))
 		{
 			ps.setLong(1, guildId);
 			ps.executeUpdate();
 		}
 		catch (final SQLException e)
 		{
-			LOG.error("There was an error while removing the log channel id of guild {}!", guildId, e);
+			LOG.error("There was an error while removing the {} property of guild {}!", property, guildId, e);
 		}
 	}
 
-	public static boolean hasChannel(final long guildId)
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	private static boolean hasProperty(final long guildId, final String property)
 	{
-		try (final var c = getConnection(); final var ps = c.prepareStatement(GUILDS_STATEMENT))
+		try (final var c = getConnection(); final var ps = c.prepareStatement("SELECT SUM(`" + property + "` > 0) AS total FROM `guilds` WHERE `guild_id`=?;"))
 		{
 			ps.setLong(1, guildId);
 			try (final var rs = ps.executeQuery())
@@ -95,8 +96,38 @@ public class MySQL
 		}
 		catch (final SQLException e)
 		{
-			LOG.error("There was an error while checking if guild {} has a log channel set!", guildId, e);
+			LOG.error("There was an error while checking if guild {} has the {} property set!", guildId, property, e);
 		}
 		return false;
+	}
+
+	public static long getChannel(final long guildId)
+	{
+		return getProperty(guildId, "channel_id");
+	}
+
+	public static long getRole(final long guildId)
+	{
+		return getProperty(guildId, "role_id");
+	}
+
+	public static void setChannel(final long guildId, final long id)
+	{
+		setProperty(guildId, id, "channel_id");
+	}
+
+	public static void setRole(final long guildId, final long id)
+	{
+		setProperty(guildId, id, "role_id");
+	}
+
+	public static void removeChannel(final long guildId)
+	{
+		removeProperty(guildId, "channel_id");
+	}
+
+	public static void removeRole(final long guildId)
+	{
+		removeProperty(guildId, "role_id");
 	}
 }
