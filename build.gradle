@@ -18,7 +18,7 @@ dependencies {
         exclude module: 'opus-java'
     }
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
-    implementation group: 'org.apache.commons', name: 'commons-text', version: '1.6'
+    implementation group: 'org.apache.commons', name: 'commons-text', version: '1.8'
     implementation group: 'com.google.apis', name: 'google-api-services-youtube', version: 'v3-rev212-1.25.0'
     implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.43'
 }
