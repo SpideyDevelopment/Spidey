@@ -1,28 +1,28 @@
 package me.canelex.spidey.commands;
 
+import me.canelex.jda.api.entities.Message;
 import me.canelex.spidey.objects.command.Category;
 import me.canelex.spidey.objects.command.ICommand;
 import me.canelex.spidey.utils.Utils;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import java.awt.*;
 import java.lang.management.ManagementFactory;
 
 @SuppressWarnings("unused")
-public class InfoCommand implements ICommand {
+public class InfoCommand implements ICommand
+{
+	private static final String BUILD_DATE = Utils.getBuildDate();
 
 	@Override
-	public final void action(final GuildMessageReceivedEvent e) {
-
-		final var jda = e.getJDA();
-		final var author = e.getAuthor();
-		final var msgCh = e.getChannel();
-
+	public final void action(final String[] args, final Message message)
+	{
+		final var author = message.getAuthor();
+		final var msgCh = message.getChannel();
+		final var jda = message.getJDA();
 		final var dev = jda.retrieveApplicationInfo().complete().getOwner();
-
-		final var memory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+		final var runtime = Runtime.getRuntime();
+		final var memory = runtime.totalMemory() - runtime.freeMemory();
 		final var duration = ManagementFactory.getRuntimeMXBean().getUptime();
-
 		final var years = duration / 31104000000L;
 		final var months = duration / 2592000000L % 12;
 		final var days = duration / 86400000L % 30;
@@ -36,25 +36,22 @@ public class InfoCommand implements ICommand {
 		uptime = Utils.replaceLast(uptime, ",", " and");
 
 		final var eb = Utils.createEmbedBuilder(author);
-		eb.setAuthor("About me", "https://canelex.ymastersk.net", jda.getSelfUser().getEffectiveAvatarUrl());
+		eb.setAuthor("About me", "https://paypal.me/canelex", jda.getSelfUser().getAvatarUrl());
 		eb.setColor(Color.WHITE);
 		eb.addField("Developer", dev.getAsMention(), false);
-		eb.addField("Ping", "**" + e.getJDA().getGatewayPing() + "**, **" + e.getJDA().getRestPing().complete() + "** ms", false);
+		eb.addField("Ping", "**" + jda.getGatewayPing() + "**, **" + jda.getRestPing().complete() + "** ms", false);
 		eb.addField("Used memory", "**" + (memory / 1000000) + "**MB", false);
 		eb.addField("Uptime", uptime, false);
+		eb.addField("Build date", BUILD_DATE, false);
 		Utils.sendMessage(msgCh, eb.build());
-
 	}
 
 	@Override
 	public final String getDescription() { return "Shows you info about me"; }
-	@Override
-	public final boolean isAdmin() { return false; }
 	@Override
 	public final String getInvoke() { return "info"; }
 	@Override
 	public final Category getCategory() { return Category.INFORMATIVE; }
 	@Override
 	public final String getUsage() { return "s!info"; }
-
 }
