@@ -16,7 +16,7 @@ public class CommandHandler
 		if (content.length() != 0)
 		{
 			final var command = content.contains(" ") ? content.substring(0, content.indexOf(' ')) : content;
-			final var commands = Core.commands;
+			final var commands = Core.getCommands();
 			if (commands.containsKey(command))
 			{
 				final var cmd = commands.get(command);

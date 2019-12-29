@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class Core
 {
-	public static final Map<String, ICommand> commands = new HashMap<>();
+	protected static final Map<String, ICommand> commands = new HashMap<>();
 	private static final Logger LOG = LoggerFactory.getLogger(Core.class);
 
 	public static void main(final String[] args)
@@ -34,5 +34,10 @@ public class Core
 			LOG.error("There was an error while building JDA!", e);
 		}
         Utils.registerCommands();
+	}
+
+	public static Map<String, ICommand> getCommands()
+	{
+		return commands;
 	}
 }

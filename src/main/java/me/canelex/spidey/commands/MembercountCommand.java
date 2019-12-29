@@ -8,6 +8,8 @@ import me.canelex.spidey.utils.Utils;
 
 import java.awt.*;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
@@ -44,11 +46,13 @@ public class MembercountCommand implements ICommand
 	}
 
 	@Override
-	public final String getDescription() { return "Shows you membercount of guild"; }
+	public final String getDescription() { return "Shows you the membercount of the guild"; }
 	@Override
 	public final String getInvoke() { return "membercount"; }
 	@Override
 	public final Category getCategory() { return Category.INFORMATIVE; }
 	@Override
-	public final String getUsage() { return "s!membercount"; }
+	public final String getUsage() { return "s!membercount | s!members"; }
+	@Override
+	public final List<String> getAliases() { return Collections.singletonList("members"); }
 }

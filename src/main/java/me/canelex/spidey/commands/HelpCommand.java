@@ -10,6 +10,7 @@ import me.canelex.spidey.utils.Utils;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Function;
 
@@ -23,12 +24,19 @@ public class HelpCommand extends Core implements ICommand
         final var channel = message.getChannel();
         final var author = message.getAuthor();
         final var eb = Utils.createEmbedBuilder(author)
-                .setColor(Color.WHITE)
-                .setAuthor("Spidey's Commands", "https://github.com/caneleex/Spidey", message.getJDA().getSelfUser().getAvatarUrl());
+                            .setColor(Color.WHITE)
+                            .setAuthor("Spidey's Commands", "https://github.com/caneleex/Spidey", message.getJDA().getSelfUser().getAvatarUrl());
 
         if (args.length < 2)
         {
-            Core.commands.forEach(commands::put);
+            Core.getCommands().forEach(commands::put);
+            final var iter = commands.entrySet().iterator();
+            final var valueSet = new HashSet<ICommand>();
+            while (iter.hasNext())
+            {
+                if (!valueSet.add(iter.next().getValue()))
+                    iter.remove();
+            }
             commands.remove("help");
             commands.entrySet().removeIf(entry -> !Utils.hasPerm(message.getMember(), entry.getValue().getRequiredPermission()));
 
@@ -53,20 +61,22 @@ public class HelpCommand extends Core implements ICommand
         else
         {
             final var cmd = message.getContentRaw().substring(7);
-            if (!Core.commands.containsKey(cmd))
+            if (!Core.getCommands().containsKey(cmd))
                 Utils.sendMessage(channel, ":no_entry: **" + cmd + "** isn't a valid command.", false);
             else
             {
-                final var command = Core.commands.get(cmd);
+                final var command = Core.getCommands().get(cmd);
                 final var description = command.getDescription();
                 final var usage = command.getUsage();
                 final var requiredPermission = command.getRequiredPermission();
+                final var aliases = command.getAliases();
                 eb.setAuthor("Viewing command info - " + cmd);
                 eb.setColor(Color.WHITE);
                 eb.addField("Description", description == null ? "Unspecified" : description, false);
                 eb.addField("Usage", usage == null ? "Unspecified" : "`" + usage + "` (<> = required, () = optional)", false);
                 eb.addField("Category",  command.getCategory().getFriendlyName(), false);
                 eb.addField("Required permission", requiredPermission == Permission.UNKNOWN ? "None" : requiredPermission.getName(), false);
+                eb.addField("Aliases", aliases.isEmpty() ? "None" : String.join(", ", aliases), false);
                 Utils.sendMessage(channel, eb.build());
             }
         }
@@ -78,7 +88,8 @@ public class HelpCommand extends Core implements ICommand
         for (var i = 0; i < list.size(); i++)
         {
             final var cmd = list.get(i);
-            builder.append("`").append(transformer.apply(cmd)).append("`");
+            final var aliases = cmd.getAliases();
+            builder.append("`").append(transformer.apply(cmd)).append("`").append(aliases.isEmpty() ? "" : " (`" + String.join(", ", aliases) + "`)");
             if (i != list.size() - 1)
                 builder.append(", ");
         }

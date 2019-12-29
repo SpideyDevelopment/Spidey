@@ -134,14 +134,14 @@ public class Utils extends Core
 
     public static void registerCommands()
     {
-        Core.commands.clear();
+        Core.getCommands().clear();
         try (final var result = graph.scan())
         {
             for (final var cls : result.getClassesImplementing("me.canelex.spidey.objects.command.ICommand"))
             {
                 final var cmd = (ICommand) cls.loadClass().getDeclaredConstructor().newInstance();
-                Core.commands.put(cmd.getInvoke(), cmd);
-                cmd.getAliases().forEach(alias -> Core.commands.put(alias, cmd));
+                Core.getCommands().put(cmd.getInvoke(), cmd);
+                cmd.getAliases().forEach(alias -> Core.getCommands().put(alias, cmd));
             }
         }
         catch (final Exception e)
