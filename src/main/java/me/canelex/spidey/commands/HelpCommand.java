@@ -20,7 +20,8 @@ public class HelpCommand extends Core implements ICommand
     @Override
     public final void action(final String[] args, final Message message)
     {
-        final HashMap<String, ICommand> commands = new HashMap<>();
+        final HashMap<String, ICommand> commandsCopy = new HashMap<>();
+        final var commandsMap = Core.getCommands();
         final var channel = message.getChannel();
         final var author = message.getAuthor();
         final var eb = Utils.createEmbedBuilder(author)
@@ -29,19 +30,19 @@ public class HelpCommand extends Core implements ICommand
 
         if (args.length < 2)
         {
-            Core.getCommands().forEach(commands::put);
-            final var iter = commands.entrySet().iterator();
-            final var valueSet = new HashSet<ICommand>();
+            commandsMap.forEach(commandsCopy::put);
+            final var iter = commandsCopy.entrySet().iterator();
+            final var valueSet = new HashSet<>();
             while (iter.hasNext())
             {
                 if (!valueSet.add(iter.next().getValue()))
                     iter.remove();
             }
-            commands.remove("help");
-            commands.entrySet().removeIf(entry -> !Utils.hasPerm(message.getMember(), entry.getValue().getRequiredPermission()));
+            commandsCopy.remove("help");
+            commandsCopy.entrySet().removeIf(entry -> !Utils.hasPerm(message.getMember(), entry.getValue().getRequiredPermission()));
 
             final HashMap<Category, List<ICommand>> categories = new HashMap<>();
-            commands.values().forEach(cmd ->
+            commandsCopy.values().forEach(cmd ->
             {
                 final var list = categories.computeIfAbsent(cmd.getCategory(), ignored -> new ArrayList<>());
                 list.add(cmd);
@@ -61,11 +62,11 @@ public class HelpCommand extends Core implements ICommand
         else
         {
             final var cmd = message.getContentRaw().substring(7);
-            if (!Core.getCommands().containsKey(cmd))
+            if (!commandsMap.containsKey(cmd))
                 Utils.sendMessage(channel, ":no_entry: **" + cmd + "** isn't a valid command.", false);
             else
             {
-                final var command = Core.getCommands().get(cmd);
+                final var command = commandsMap.get(cmd);
                 final var description = command.getDescription();
                 final var usage = command.getUsage();
                 final var requiredPermission = command.getRequiredPermission();

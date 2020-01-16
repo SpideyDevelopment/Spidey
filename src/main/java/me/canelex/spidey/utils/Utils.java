@@ -62,7 +62,7 @@ public class Utils extends Core
         ch.sendMessage(embed).queue();
     }
 
-    private static void sendPrivateMessage(final User user, final String toSend)
+    public static void sendPrivateMessage(final User user, final String toSend)
     {
         user.openPrivateChannel().queue(channel -> channel.sendMessage(toSend).queue());
     }
@@ -186,7 +186,7 @@ public class Utils extends Core
 
     public static void storeInvites(final Guild guild)
     {
-        guild.retrieveInvites().queue(invites -> invites.forEach(invite -> Events.getInvites().put(invite.getCode(), new WrappedInvite(invite))));
+        guild.retrieveInvites().queue(invites -> invites.forEach(invite -> Events.getInvites().put(invite.getCode(), new WrappedInvite(invite))), failure -> sendPrivateMessage(guild.getOwner().getUser(), "I'm not able to attach the invite a user joined with as i don't have permission to manage the server."));
     }
 
     public static void stopInvitesCheck(final Guild guild)

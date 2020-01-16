@@ -1,6 +1,7 @@
 package me.canelex.spidey;
 
 import me.canelex.jda.api.EmbedBuilder;
+import me.canelex.jda.api.Permission;
 import me.canelex.jda.api.audit.ActionType;
 import me.canelex.jda.api.entities.MessageType;
 import me.canelex.jda.api.events.ShutdownEvent;
@@ -140,10 +141,17 @@ public class Events extends ListenerAdapter
 		final var role = guild.getRoleById(MySQL.getRole(id));
 		final var userId = user.getId();
 
-		if (role != null)
-			guild.addRoleToMember(userId, role).queue();
 		if (channel != null)
 		{
+			if (role != null)
+			{
+				final var selfMember = guild.getSelfMember();
+				if (!selfMember.canInteract(role) || !Utils.hasPerm(selfMember, Permission.MANAGE_ROLES))
+					Utils.sendMessage(channel, "I'm not able to add the joinrole to user **" + user.getAsTag() + "** as i don't have permissions to do so.", false);
+				else
+					guild.addRoleToMember(userId, role).queue();
+			}
+
 			final var eb = new EmbedBuilder();
 			eb.setAuthor("USER HAS JOINED");
 			eb.setThumbnail(user.getAvatarUrl());
