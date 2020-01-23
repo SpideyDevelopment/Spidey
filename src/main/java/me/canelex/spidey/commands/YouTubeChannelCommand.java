@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -46,10 +47,8 @@ public class YouTubeChannelCommand implements ICommand
 
 			if (!searchResponse.getItems().isEmpty())
 			{
-				final var msg = channel.sendMessage("Fetching data..").complete(); //TODO temporary solution
 				final var channelId = searchResponse.getItems().get(0).getSnippet().getChannelId();
-				final var channels = youtube.channels().list("snippet, statistics");
-				channels.setId(channelId);
+				final var channels = youtube.channels().list("snippet, statistics").setId(channelId);
 				final var c = channels.execute().getItems().get(0);
 
 				cal.setTimeInMillis(c.getSnippet().getPublishedAt().getValue());
@@ -77,7 +76,7 @@ public class YouTubeChannelCommand implements ICommand
 					eb.addBlankField(false);
 					eb.setImage(sb.getBanner());
 				}
-				msg.editMessage(eb.build()).override(true).queue();
+				channel.sendMessage("Fetching data..").delay(Duration.ofSeconds(4)).flatMap(msg -> msg.editMessage(eb.build()).override(true)).queue();
 			}
 			else
 				Utils.sendMessage(channel, ":no_entry: No results found.", false);
