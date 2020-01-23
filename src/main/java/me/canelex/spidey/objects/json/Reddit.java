@@ -23,7 +23,7 @@ public class Reddit
     private boolean exists(final String name)
     {
         return 1 == Utils.getJson("https://reddit.com/subreddits/search.json?limit=1&q=" + name).getObject("data").getInt("dist");
-    } //TODO login to access private subreddits
+    }
 
     private Reddit fromJson(final DataObject o)
     {
