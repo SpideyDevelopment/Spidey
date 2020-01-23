@@ -22,10 +22,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -34,7 +31,7 @@ public class Utils extends Core
     private static final String INVITE_LINK = "https://discordapp.com/oauth2/authorize?client_id=468523263853592576&scope=bot&permissions=1342188724";
     private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
     private static final ClassGraph graph = new ClassGraph().whitelistPackages("me.canelex.spidey.commands").enableAllInfo().ignoreClassVisibility();
-    private static final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Invites-Check").setUncaughtExceptionHandler((t, e) -> LOG.error("There was an exception in thread {}: {}", t.getName(), e.getMessage())).build();
+    private static final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Spidey").setUncaughtExceptionHandler((t, e) -> LOG.error("There was an exception in thread {}: {}", t.getName(), e.getMessage())).build();
     private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(threadFactory);
     private static final Map<Long, ScheduledFuture<?>> SCHEDULERS = new HashMap<>();
     private static final char[] SUFFIXES = {'k', 'M', 'B'};
@@ -132,9 +129,18 @@ public class Utils extends Core
         return ":white_check_mark: Successfully deleted **" + count + "** message" + (count > 1 ? "s" : "") + (u == null ? "." : String.format(" by user **%s**.", u.getAsTag()));
     }
 
-    public static void registerCommands()
+    public static void startup()
     {
-        Core.getCommands().clear();
+        final var jda = Core.getJDA();
+        final var activities = new Activity[]
+        {
+            Activity.listening("your commands"),
+            Activity.watching("you"),
+            Activity.watching(jda.getGuildCache().size() + " guilds"),
+            Activity.watching(jda.getUserCache().size() + " users")
+        };
+
+        Core.getCommands().clear(); //just to make sure that the commands map is empty
         try (final var result = graph.scan())
         {
             for (final var cls : result.getClassesImplementing("me.canelex.spidey.objects.command.ICommand"))
@@ -148,6 +154,9 @@ public class Utils extends Core
         {
             LOG.error("There was an error while registering the commands!", e);
         }
+
+        EXECUTOR.scheduleAtFixedRate(() ->
+            jda.getPresence().setActivity(activities[new Random().nextInt(activities.length)]), 0L, 30L, TimeUnit.SECONDS);
     }
 
     public static String getSiteContent(final String url)
