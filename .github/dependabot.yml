@@ -1,0 +1,11 @@
+version: 2
+updates:
+- package-ecosystem: gradle
+  directory: "/"
+  schedule:
+    interval: daily
+    time: '14:00'
+    timezone: Europe/Bratislava
+  pull-request-branch-name:
+    separator: "-"
+  open-pull-requests-limit: 99
