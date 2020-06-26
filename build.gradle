@@ -22,7 +22,7 @@ dependencies {
     implementation group: 'com.google.apis', name: 'google-api-services-youtube', version: 'v3-rev20200526-1.30.9'
     implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.78'
     implementation group: 'io.sentry', name: 'sentry-logback', version: '1.7.30'
-    implementation("net.dv8tion:JDA:4.1.1_165") {
+    implementation("net.dv8tion:JDA:4.1.1_166") {
         exclude group: 'club.minnced', module: 'opus-java'
     }
 }
