@@ -18,7 +18,7 @@ dependencies {
     implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.78'
     implementation group: 'io.sentry', name: 'sentry-logback', version: '1.7.30'
     implementation group: 'org.codehaus.groovy', name: 'groovy-jsr223', version: '3.0.5'
-    implementation("net.dv8tion:JDA:4.2.0_189") {
+    implementation("net.dv8tion:JDA:4.2.0_190") {
         exclude group: 'club.minnced', module: 'opus-java'
     }
 }
