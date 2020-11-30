@@ -80,7 +80,7 @@ public class RankCommand extends Command
 
                 // compute the rank card
 
-                final var rankCard = ImageIO.read(this.getClass().getResource("/ranktemplate.png")); // load the template
+                final var rankCard = ImageIO.read(getClass().getResource("/ranktemplate.png")); // load the template
                 final var rankCardGraphics = rankCard.createGraphics();
                 rankCardGraphics.drawImage(downscaledAvatar, 85, 61, 128, 128, null);
 
@@ -88,7 +88,8 @@ public class RankCommand extends Command
 
                 rankCardGraphics.setFont(spideyFont);
                 rankCardGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                rankCardGraphics.drawString(user.getAsTag(), 445, 77);
+
+                rankCardGraphics.drawString(user.getAsTag(), 445, 77); // Name#Discriminator
 
                 //
 
