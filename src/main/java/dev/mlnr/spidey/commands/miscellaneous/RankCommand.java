@@ -6,6 +6,8 @@ import dev.mlnr.spidey.objects.command.CommandContext;
 import dev.mlnr.spidey.utils.Utils;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.internal.utils.concurrent.CountingThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -20,11 +22,26 @@ import java.util.concurrent.Executors;
 public class RankCommand extends Command
 {
     private static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool(new CountingThreadFactory(() -> "Spidey", "Rank Card Generator"));
+    private static final Logger LOGGER = LoggerFactory.getLogger(RankCommand.class);
+    private static Font spideyFont;
 
     public RankCommand()
     {
         super("rank", new String[]{}, "Shows your or mentioned user's rank in this server", "rank (User#Discriminator, @user, user id or username/nickname)", Category.MISC,
                 Permission.UNKNOWN, 0, 0);
+    }
+
+    static
+    {
+        try
+        {
+            spideyFont = Font.createFont(Font.TRUETYPE_FONT, RankCommand.class.getResourceAsStream("/font.otf"));
+            spideyFont = spideyFont.deriveFont(50.0f);
+        }
+        catch (final Exception ex)
+        {
+            LOGGER.error("The font couldn't be loaded!", ex);
+        }
     }
 
     @Override
@@ -66,6 +83,15 @@ public class RankCommand extends Command
                 final var rankCard = ImageIO.read(this.getClass().getResource("/ranktemplate.png")); // load the template
                 final var rankCardGraphics = rankCard.createGraphics();
                 rankCardGraphics.drawImage(downscaledAvatar, 85, 61, 128, 128, null);
+
+                // text
+
+                rankCardGraphics.setFont(spideyFont);
+                rankCardGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                rankCardGraphics.drawString(user.getAsTag(), 445, 77);
+
+                //
+
                 rankCardGraphics.dispose();
 
                 // sending
