@@ -68,7 +68,7 @@ public class RankCommand extends Command
                 roundAvatarGraphics.drawImage(avatar, 0, 0, 256, 256, null);
                 roundAvatarGraphics.dispose();
 
-                // downscale the avatar
+                // downscale the avatar to get rid of sharp edges
 
                 final var downscaledAvatar = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
                 final var downscaledAvatarGraphics = downscaledAvatar.createGraphics();
