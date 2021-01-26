@@ -23,7 +23,7 @@ dependencies {
     implementation group: 'com.sedmelluq', name: 'jda-nas', version: '1.1.0'
     implementation group: 'net.jodah', name: 'expiringmap', version: '0.5.9'
     implementation group: 'com.github.markozajc', name: 'akiwrapper', version: '1.5'
-    implementation group: 'com.zaxxer', name: 'HikariCP', version: '4.0.0'
+    implementation group: 'com.zaxxer', name: 'HikariCP', version: '4.0.1'
     implementation("net.dv8tion:JDA:4.2.0_227") {
         exclude group: 'club.minnced', module: 'opus-java'
     }
