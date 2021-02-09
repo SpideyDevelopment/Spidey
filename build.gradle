@@ -24,7 +24,7 @@ dependencies {
     implementation group: 'net.jodah', name: 'expiringmap', version: '0.5.9'
     implementation group: 'com.github.markozajc', name: 'akiwrapper', version: '1.5'
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '4.0.1'
-    implementation("net.dv8tion:JDA:4.2.0_227") {
+    implementation("net.dv8tion:JDA:4.2.0_228") {
         exclude group: 'club.minnced', module: 'opus-java'
     }
 }
