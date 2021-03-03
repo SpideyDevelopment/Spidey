@@ -28,7 +28,7 @@ dependencies {
     implementation group: 'com.github.markozajc', name: 'akiwrapper', version: '1.5.1'
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '4.0.2'
     implementation group: 'com.github.caneleex', name: 'BotListHandler', version: '1.0.7'
-    implementation("net.dv8tion:JDA:4.2.0_229") {
+    implementation("net.dv8tion:JDA:4.2.0_230") {
         exclude group: 'club.minnced', module: 'opus-java'
     }
 }
