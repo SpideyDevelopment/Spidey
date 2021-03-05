@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
-    id 'nu.studer.jooq' version '5.2'
+    id 'nu.studer.jooq' version '5.2.1'
 }
 
 application {
