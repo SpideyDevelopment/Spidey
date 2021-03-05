@@ -43,7 +43,7 @@ dependencies {
 
     // logging
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.3.0-alpha5'
-    implementation group: 'io.sentry', name: 'sentry-logback', version: '4.2.0'
+    implementation group: 'io.sentry', name: 'sentry-logback', version: '4.3.0'
 
     // music
     implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.72'
