@@ -31,7 +31,7 @@ dependencies {
     jooqGenerator group: 'org.postgresql', name: 'postgresql', version: '42.2.19'
 
     // eval
-    implementation group: 'org.codehaus.groovy', name: 'groovy-jsr223', version: '3.0.7'
+    implementation group: 'org.codehaus.groovy', name: 'groovy-jsr223', version: '3.0.8'
 
     // expiring map for caches
     implementation group: 'net.jodah', name: 'expiringmap', version: '0.5.9'
