@@ -379,6 +379,7 @@
       "description": "Removes a song from the queue based on its position",
       "usage": "remove <position>",
       "other": {
+        "provide": "Please provide the position of the track to remove.",
         "removed": "Track `%s` has been removed from the queue."
       }
     },

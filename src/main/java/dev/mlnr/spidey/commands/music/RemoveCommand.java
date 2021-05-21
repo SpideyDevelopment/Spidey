@@ -26,6 +26,10 @@ public class RemoveCommand extends Command {
 			ctx.replyErrorLocalized("music.messages.failure.queue_empty");
 			return false;
 		}
+		if (args.length == 0) {
+			ctx.replyErrorLocalized("commands.remove.other.provide");
+			return false;
+		}
 		ctx.getArgumentAsUnsignedInt(0, trackPosition -> {
 			var size = queue.size();
 			if (trackPosition == 0 || trackPosition > size) {
