@@ -45,7 +45,7 @@ public class Spidey {
 				.setSuccessLoggingEnabled(false)
 				.setUnavailableEventsEnabled(false)
 				.addBotList(BotList.TOP_GG, System.getenv("topgg"))
-				.addBotList(BotList.BOTLIST_SPACE, System.getenv("botlistspace"))
+				.addBotList(BotList.DISCORDLIST_SPACE, System.getenv("botlistspace"))
 				.addBotList(BotList.DBOATS, System.getenv("dboats"))
 				.addBotList(BotList.DSERVICES, System.getenv("dservices"))
 				.addBotList(BotList.DBOTS_GG, System.getenv("dbotsgg"))
