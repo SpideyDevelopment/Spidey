@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     // bot list handler
-    implementation group: 'dev.mlnr', name: 'BotListHandler-jda', version: '2.0.0_6'
+    implementation group: 'dev.mlnr', name: 'BotListHandler-jda', version: '2.0.0_7'
 
     // database
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.22'
