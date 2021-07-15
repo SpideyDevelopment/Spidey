@@ -24,7 +24,7 @@ dependencies {
     // database
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.23'
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '5.0.0'
-    implementation group: 'org.jooq', name: 'jooq', version: '3.15.0'
+    implementation group: 'org.jooq', name: 'jooq', version: '3.15.1'
     jooqGenerator group: 'org.postgresql', name: 'postgresql', version: '42.2.23'
 
     // eval
